@@ -338,27 +338,27 @@ void Correct_Angle_Par_Init(void){
 /////////////////////////////////////////4.位置闭环单向PID
 struct Mark mark;
 void Mark_PID_Par_Init(void){
-	mark.p = 18;
-	mark.i = 5;
+	mark.p = 25;
+	mark.i = 3;
 	mark.istart = 3;
 	mark.iend = 500;
 	mark.ilimit = 900 / 1.414;
-	mark.outlimit = 13700;
+	mark.outlimit = 16000;
 
 	mark.brake_distance = 460;
 	
-	mark.brake_percent = Limit(0.23 + 0.00001 * mark.outlimit,0,0.7);
-	mark.brake_gain = 0.1;
+	mark.brake_percent = Limit(0.12 + 0.00001 * mark.outlimit,0,0.7);
+	mark.brake_gain = 0.05;
 	mark.brake_outlimit = 900;
 	mark.brake_ilimit = 1000;
 }
-//////////////////////跑点的速度限制       根据最大速度最大速度 10000  那么就会限制刹车距离为 mark.brake_percent * 10000
+//////////////////////跑点的速度限制    根据最大速度最大速度 10000  那么就会限制刹车距离为 mark.brake_percent * 10000
 void Position_With_Mark_PID_Run(void)
 {
 	static struct Point last;
 	if(Point_Distance(last,site.target) > 100){
 		mark.total_dis = Point_Distance(site.target,site.now);
-		mark.brake_distance = Limit(mark.brake_percent*mark.total_dis,300, mark.outlimit * mark.brake_percent);
+		mark.brake_distance = Limit(mark.brake_percent*mark.total_dis,800, mark.outlimit * mark.brake_percent);
 		memcpy(&last,&site.target,sizeof(last));
 	}
 	chassis.self_control = run_point;
