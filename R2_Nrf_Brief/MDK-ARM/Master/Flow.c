@@ -36,7 +36,7 @@ void Flow(void){
 	}
 	else if(car.state == wait_r1_ball){
 		Self_Lock_Out();
-		if(r1.receive_ball_flag == 1){
+		if(R1.receive_ball_flag == 1){
 			Tell_Yao_Xuan("predunk");
 			car.state = dunk;
 		}
@@ -70,23 +70,6 @@ void Run_Point_Test(void){
 	Position_With_Mark_PID_Run();
 }
 
-
-///////////////////////////////////////雷达偏置测试////////////////////////////////////////
-char ladar_offset_finish_flag;
-float ladar_last_r;
-void Ladar_Offset_Flow(void){
-	Chassis_Velocity_Out(0,0,920);
-	if(ladar_offset_finish_flag == 0){
-		Send_Put_Data(0,ladar.rowr);
-	}
-	if(fabs(ladar.rowr - ladar_last_r) > 3)
-		ladar_offset_finish_flag = 1;
-	ladar_last_r =  ladar.rowr;
-}
-void Ladar_Offset_Test_Clear(void){
-	ladar_offset_finish_flag = 0;
-  ladar_last_r = ladar.rowr;
-}
 ////////////////////////////////////编码器偏置测试//////////////////////////////////////////////
 char odometer_offset_finish_flag;
 float odometer_last_r;

@@ -1,20 +1,13 @@
 #include "Communication.h"
-#include "Can_Bsp.h"
-#include "Global.h"
-#include "string.h"
-#include "Interact.h"
 #define Com_Can hfdcan1
 
 #define poledown_id 0xCA
 #define dribble_id 0xCB
 #define lift_id 0xCC
 #define jump_id 0xCD
-unsigned char Send[8];
 
-struct R1_Data r1;
-
-
-
+#define BytesOf_R1Data 8 
+struct R1_Exchange R1;
 void Tell_Yao_Xuan(char *message){
 	  ////////////防守指令//////////////////
     if(strcmp(message, "fold") == 0)
@@ -42,11 +35,16 @@ void Tell_Yao_Xuan(char *message){
 		strcpy(message,"nothing"); 
 }
 
+
 void Get_R1_Data(unsigned char * data){
 	if(data[0] != 0xA5)
 		return;
-	r1.x = char2float(data + 1) * 1000;
-	r1.y = char2float(data + 5) * 1000;
-	r1.receive_ball_flag = data[9];
-	r1.oppsite_angle = Limit(rad2ang(atan2f(site.now.y - 275 - r1.y ,site.now.x - r1.x  + 275)), -90,90);
+	memcpy(R1.convert.uint8_data,data + 1,BytesOf_R1Data);
+	R1.x = R1.convert.float_data[0];
+	R1.y = R1.convert.float_data[1];
+	R1.oppsite_angle = Limit(rad2ang(atan2f(site.now.y - 275 - R1.y ,site.now.x - R1.x  + 275)), -90,90);
 }
+
+
+
+

@@ -12,6 +12,7 @@
 #define signy 1
 #define encx_id 1
 #define ency_id 2
+#define ratio 25.321f
 unsigned char encoder_data[2][8];
 unsigned char encoder_send[8];
 struct Odometer odometer;
@@ -47,30 +48,30 @@ void Set_ZeroPoint(unsigned char ID){
 void Encoder_XY_VX_VY_Cal(int dt){
   Diff_Odometer();
 	//计算旋转补偿
-	
 	//计算车体速度
-	float dx = odometer.do1;
-	float dy = odometer.do2;
-	
-	site.car_pos.row_vx = dx / dt / 25.32;
-	site.car_pos.row_vy = dy / dt / 25.32;
-	
-	odometer.dx = dx* cos(ang2rad(site.now.r)) - dy*sin(ang2rad(site.now.r));
-	odometer.dy = dx* sin(ang2rad(site.now.r)) + dy*cos(ang2rad(site.now.r));
-	odometer.y = odometer.dy + odometer.y;
+	float row_dx = odometer.do1 / ratio;
+	float row_dy = odometer.do2 / ratio;
+	//计算车体坐标系的速度
+	site.car_pos.row_vx = row_dx / dt;
+	site.car_pos.row_vy = row_dy / dt;
+	//初步计算场地坐标系的dx dy
+	float dx = row_dx* cos(ang2rad(site.now.r)) - row_dy*sin(ang2rad(site.now.r));
+	float dy = row_dx* sin(ang2rad(site.now.r)) + row_dy*cos(ang2rad(site.now.r));
+	//计算误差角度之后的dx dy
+	odometer.dx = dx* cos(odometer.offset_angle) - dy*sin(odometer.offset_angle);
+	odometer.dy = dy* cos(odometer.offset_angle) + dx*sin(odometer.offset_angle);
+	//对 dx dy 进行积分
 	odometer.x = odometer.dx + odometer.x;
-	
-	float offset_angle = 0.0045;
-	site.enc_pos.row_y = (odometer.y/ 25.32f) * cos(offset_angle) + (odometer.x/ 25.32f) * sin(offset_angle) - 375;
-	site.enc_pos.row_x = (odometer.x/ 25.32f) * cos(offset_angle) - (odometer.y/ 25.32f) * sin(offset_angle) + 400;
-
-	
+	odometer.y = odometer.dy + odometer.y;
+	//与定位系统交互
+	site.enc_pos.row_x = odometer.x + 400;
+	site.enc_pos.row_y = odometer.y - 375;
 	//计算位置微分 也就是速度
-	site.enc_pos.row_vy = (odometer.dy / dt / 25.32f) * cos(offset_angle);
-	site.enc_pos.row_vx = (odometer.dx / dt / 25.32f) * cos(offset_angle);
+	site.enc_pos.row_vx = odometer.x / dt;
+	site.enc_pos.row_vy = odometer.y / dt;
 	//计算行驶过的累计历程
-	odometer.xdis += fabs(odometer.dx) / 25.32;
-	odometer.ydis += fabs(odometer.dy) / 25.32;
+	odometer.xdis += fabs(odometer.dx);
+	odometer.ydis += fabs(odometer.dy);
 }
 void Encoder_Init(void){
 	Set_ZeroPoint(0x01);
@@ -79,6 +80,7 @@ void Encoder_Init(void){
 	HAL_Delay(100);
 	Encoder_XY_VX_VY_Cal(1);
 	Odometer_Clear();
+	odometer.offset_angle = 0;
 }
 void Odometer_Clear(void){
 	odometer.x = 0;

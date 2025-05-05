@@ -8,37 +8,6 @@
 #include "mine.h"
 #include "VESC.h"
 
-#define Small_Green 0
-
-
-#if Small_Green
-//四个舵轮的编号
-#define frontright 0
-#define frontleft 1
-#define behindleft 2
-#define behindright 3
-//转向轮 发送的ID
-#define front_right_turn_send_id 1
-#define front_left_turn_send_id 2
-#define behind_left_turn_send_id 3
-#define behind_right_turn_send_id 4
-//转向轮 回传的ID
-#define front_right_turn_receive_id 0x65
-#define front_left_turn_receive_id 0x66
-#define behind_left_turn_receive_id 0x67
-#define behind_right_turn_receive_id 0x68
-//驱动轮 VESC的ID
-#define front_right_drive_id 6
-#define front_left_drive_id 7 
-#define behind_left_drive_id 8
-#define behind_right_drive_id 9
-//想要逆时针转 就把初始偏置调大 
-//想要顺时针转 就把初始偏置调小 
-#define frontright_offset -15
-#define frontleft_offset 45
-#define behindleft_offset  160
-#define behindright_offset -63
-#else
 #define VESC_NUM 4
 #define TURN_NUM 4
 #define front_wheel 0		
@@ -65,8 +34,6 @@
 #define left_offset 174
 #define right_offset  0
 #define behind_offset  -156
-#endif
-
 
 struct Mark
 {
@@ -141,10 +108,7 @@ unsigned char Arrive_Point(struct Point point);
 unsigned char Near_Point(struct Point point);
 //自动自锁
 void Self_Lock_Auto(void);
-void Self_Brake_Out(void);
 void Self_Lock_Out(void);
-//涵道输出
-void Set_Fun_Speed(void);
 //s输入角度目标值 输出角度PID的输出值
 float Correct_Angle(float target);
 

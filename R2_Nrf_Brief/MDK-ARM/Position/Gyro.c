@@ -178,24 +178,15 @@ void YIS506_Decode(void){
 		memcpy(YIS512_Feedback,YIS512_Feedback,8);
 		if(yis506.header == ExtID_yaw)
 			Euler_Cal();
-//		else if(yis506.header == ExtID_accel)
-//			Accel_Cal();
-//		else if(yis506.header == ExtID_omega)
-//			Omega_Cal();
+		else if(yis506.header == ExtID_accel)
+			Accel_Cal();
+		else if(yis506.header == ExtID_omega)
+			Omega_Cal();
 }
 /////////////////////////////////////////////定期修正陀螺仪角度/////////////////////////////
-void YIS506_Fuse_With_Ladar_Angle(int time){
-	static int last;
-	int now = HAL_GetTick();
-	if((now - last > time) && (ladar.angle_get_flag == 1)){
-		//计算
-		yis506.euler.yaw_offset = yis506.euler.yaw - ladar.r;
-		//
-		ladar.angle_get_flag = 0;
-	}
-}
 void Gyro_Reset(void){
 	yis506.euler.yaw_offset = yis506.euler.yaw;
+	MX_FDCAN2_Init();
 }
 
 

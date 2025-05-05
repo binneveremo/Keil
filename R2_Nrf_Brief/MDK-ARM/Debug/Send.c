@@ -19,8 +19,6 @@ char send_data[40];
 unsigned char wireless_data[wireless_data_num];
 uint8_uint32_float_union send_union;
 
-//新的通信协议
-//一共只需要五位 帧头加浮点数
 ///////////////////////////无线烧录器所使用的程序////////////////////////////////////////////
 uint8_uint32_float_union send_union;
 void Send_Put_Data(char index,float data){

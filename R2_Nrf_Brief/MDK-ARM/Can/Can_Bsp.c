@@ -14,6 +14,8 @@ int FDCAN_Send(FDCAN_HandleTypeDef *hfdcan,int head, char * idtype,unsigned char
 	//设置长度
 	if(length <= 8)
   	fdcan_TxHeader.DataLength = length; 
+	else if(length == 12)
+    fdcan_TxHeader.DataLength = FDCAN_DLC_BYTES_12;	
 	else if(length == 16)
     fdcan_TxHeader.DataLength = FDCAN_DLC_BYTES_16;		
   else if(length == 20)

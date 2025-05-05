@@ -16,22 +16,8 @@ struct EKF ekf_y = {
 	.r = 1.8,
 };
 void Location_Type_Choose(void){
-//	site.now.x = ladar.x;
-//	site.now.y = ladar.y;
 	site.now.x = site.enc_pos.row_x;
 	site.now.y = site.enc_pos.row_y;
-//	if(dt35.xcredible_flag == 1)
-//		Set_Odometer_X(dt35.x);
-//	if(dt35.ycredible_flag == 1)
-//		Set_Odometer_Y(dt35.y);
-//	
-	
-	site.ladar_pos.row_x = ladar.x;
-	site.ladar_pos.row_y = ladar.y;
-  site.ladar_pos.with_odo_x = ladar.fuse_x;
-	site.ladar_pos.with_odo_y = ladar.fuse_y;
-	site.now.r = site.gyro_pos.r;
-	//site.now.r = ladar.r;
 }
 //////////////////////////////////////////////像雷达一样在dt35的基础上做积分
 void DT35_Fuse_With_Odometer(float dt){
@@ -85,39 +71,39 @@ struct EKF odo_ladar_kalman_y = {
 //////////////////////////////////////////////////////////////////////////////////雷达与马盘的数据融合/////////////////////////////////////////////////////////////////////
 void Ladar_With_Odometer_Kalman(float dt){
 	//给结构体赋值
-	if(ladar.get_flag == 1){
-		ladar.get_flag = 0;
-		ladar.dx = 0;
-		ladar.dy = 0;
-	}
-	else if(ladar.get_flag == 0){
-		ladar.dx += site.enc_pos.row_vx * dt ;
-		ladar.dy += site.enc_pos.row_vy * dt ;
-	}
-	ladar.fuse_x = ladar.x + ladar.dx;
-	ladar.fuse_y = ladar.y + ladar.dy;
-	site.ladar_pos.row_x = ladar.x;
-	site.ladar_pos.row_y = ladar.y;
-	site.ladar_pos.with_odo_x = EKF_Filter(&odo_ladar_kalman_x,ladar.fuse_x,site.gyro_pos.with_odo_vx * dt);;
-	site.ladar_pos.with_odo_y = EKF_Filter(&odo_ladar_kalman_y,ladar.fuse_y,site.gyro_pos.with_odo_vy * dt);
-}
-void Ladar_With_Odometer_Relocation(float dt){
-	if(ladar.get_flag == 1){
-		ladar.get_flag = 0;
-		ladar.dx = 0;
-		ladar.dy = 0;
-	}
-	else if(ladar.get_flag == 0){
-		ladar.dx += site.enc_pos.row_vx * dt * 1.00;
-		ladar.dy += site.enc_pos.row_vy * dt * 1.00;
-	}
-	ladar.fuse_x = ladar.x + ladar.dx;
-	ladar.fuse_y = ladar.y + ladar.dy;
-	
-	site.ladar_pos.row_x = ladar.x;
-	site.ladar_pos.row_y = ladar.y;
-	site.ladar_pos.with_odo_x = ladar.fuse_x;
-	site.ladar_pos.with_odo_y = ladar.fuse_y;
+//	if(ladar.get_flag == 1){
+//		ladar.get_flag = 0;
+//		ladar.dx = 0;
+//		ladar.dy = 0;
+//	}
+//	else if(ladar.get_flag == 0){
+//		ladar.dx += site.enc_pos.row_vx * dt ;
+//		ladar.dy += site.enc_pos.row_vy * dt ;
+//	}
+//	ladar.fuse_x = ladar.x + ladar.dx;
+//	ladar.fuse_y = ladar.y + ladar.dy;
+//	site.ladar_pos.row_x = ladar.x;
+//	site.ladar_pos.row_y = ladar.y;
+//	site.ladar_pos.with_odo_x = EKF_Filter(&odo_ladar_kalman_x,ladar.fuse_x,site.gyro_pos.with_odo_vx * dt);;
+//	site.ladar_pos.with_odo_y = EKF_Filter(&odo_ladar_kalman_y,ladar.fuse_y,site.gyro_pos.with_odo_vy * dt);
+//}
+//void Ladar_With_Odometer_Relocation(float dt){
+//	if(ladar.get_flag == 1){
+//		ladar.get_flag = 0;
+//		ladar.dx = 0;
+//		ladar.dy = 0;
+//	}
+//	else if(ladar.get_flag == 0){
+//		ladar.dx += site.enc_pos.row_vx * dt * 1.00;
+//		ladar.dy += site.enc_pos.row_vy * dt * 1.00;
+//	}
+//	ladar.fuse_x = ladar.x + ladar.dx;
+//	ladar.fuse_y = ladar.y + ladar.dy;
+//	
+//	site.ladar_pos.row_x = ladar.x;
+//	site.ladar_pos.row_y = ladar.y;
+//	site.ladar_pos.with_odo_x = ladar.fuse_x;
+//	site.ladar_pos.with_odo_y = ladar.fuse_y;
 }	
 
 

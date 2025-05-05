@@ -53,7 +53,6 @@ void communication(void const * argument)
 		//手柄数据解析
 		Get_GamePad_Data();
 	  GamePad_Data_Cla();
-		Vision_Data_Decode();
 		Wireless_Send();
     osDelay(40);
 	}
@@ -78,7 +77,7 @@ void location(void const * argument)
 		//为车车选择坐标系
     Location_Type_Choose();
 		//向视觉 发送定位以及速度
-		//Send_Velocity_Vision();
+		Send_Velocity_Vision();
 		//DT35解算
 		osDelay(2);
   }

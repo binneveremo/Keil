@@ -5,6 +5,11 @@ struct Odometer {
 	int o2_pre;
 	int o1_row;
 	int o2_row;
+	/*需要包含以下变量
+	1.每个码盘的dx dy也就是原生数据的dx dy
+	2.计算到场地坐标系的dx dy
+	3.补偿之后的dx dy
+	*//////////////////////////////
 	
 	float do1;
 	float do2;
@@ -12,10 +17,8 @@ struct Odometer {
 	float dy;
 	float x;
 	float y;
-	//true differential 1 真正的微分 也就是旋转补偿之后的结果
-	double tx;
-	float ty;
 
+	float offset_angle;
 	//x轴行驶过的里程
 	float xdis;
 	float ydis;

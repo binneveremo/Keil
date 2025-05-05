@@ -46,6 +46,6 @@ new_chassis/mngcommu.o: GamePad\mngCommu.c GamePad\mngCommu.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
   GamePad\mine.h Donkey\Chassis.h Communication\Communication.h \
-  Position\Location.h Global\Global.h Donkey\HO7213.h \
-  ..\Core\Inc\fdcan.h Can\Can_Bsp.h ..\Core\Inc\usart.h Donkey\VESC.h \
-  GamePad\crc8.h
+  Position\Location.h Global\Global.h Can\Can_Bsp.h ..\Core\Inc\fdcan.h \
+  Xuan\Interact.h Xuan\HighTorque.h Xuan\catchball.h Donkey\HO7213.h \
+  ..\Core\Inc\usart.h Donkey\VESC.h GamePad\crc8.h

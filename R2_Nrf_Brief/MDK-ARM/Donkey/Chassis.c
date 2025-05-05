@@ -60,7 +60,7 @@ void Chassis_Velocity_Out(float left, float front, float anticlock)
 void GamePad_Velocity_Standard(void)
 {
 	float rocker_x, rocker_y, rocker_r;
-	rocker_x = (chassis.Flagof.GamePad_Inverse == 1)? Game_Pad_Rocker_Data[1]:-Game_Pad_Rocker_Data[0];
+	rocker_x = (chassis.Flagof.GamePad_Inverse == 1)?-Game_Pad_Rocker_Data[1]:-Game_Pad_Rocker_Data[0];
 	rocker_y = (chassis.Flagof.GamePad_Inverse == 1)?-Game_Pad_Rocker_Data[0]:Game_Pad_Rocker_Data[1];
 	rocker_r = -Game_Pad_Rocker_Data[2];
 	if (fabs(rocker_r) < 6)
@@ -95,7 +95,7 @@ void GamePad_Velocity_R1DirNoheader(void)
 	float r = (chassis.Flagof.GamePad_Inverse == 1)? site.now.r + 90:site.now.r;
 	float y = (float)rocker_y * cos(ang2rad(r)) + rocker_x * sin(ang2rad(r));
 	float x = (float)rocker_x * cos(ang2rad(r)) - rocker_y * sin(ang2rad(r));
-	Chassis_Velocity_Out(x * Rocker_GainT, y * Rocker_GainT, Correct_Angle(r1.oppsite_angle));
+	Chassis_Velocity_Out(x * Rocker_GainT, y * Rocker_GainT, Correct_Angle(R1.oppsite_angle));
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////跑点相关///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////三种跑法：1.位置PID 2.速度PID 3.位置PID+速度PID////////////////////////////////////////////////////////////////////////////////////

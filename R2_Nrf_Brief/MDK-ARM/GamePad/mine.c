@@ -50,7 +50,7 @@ void GamePad_Detect(char time){
 	}
 }
 ///////////////////////////////////手柄按键内部定时器 也就是在flag出发的时候就会返回信号 但是在time时间以内再次出发就不会返回触发信号
-char GamePad_Timer(char flag,char index,int time){
+char GamePad_Trigger(char flag,char index,int time){
 	static int last[10];
 	int now = HAL_GetTick();
 	char trigger = ((flag == 1) && (now - last[index] > time))?1:0;
@@ -60,17 +60,7 @@ char GamePad_Timer(char flag,char index,int time){
 }
 
 void GamePad_Data_Cla(void){
-	//底盘状态切换
-	/*
-	2:手柄
-	3.无头
-	4.视觉
-	
-	6 Debug
-	7 技能
-	8.自控
-	9.none
-	*/
+	//拨码状态切花
 	if(Game_Pad_Switch_Data[5] == 1)
 		chassis.Control_Status = safe;
 	else if(Game_Pad_Switch_Data[3] == 1)
@@ -83,6 +73,8 @@ void GamePad_Data_Cla(void){
 		chassis.Control_Status = flow;
 	else if(Game_Pad_Switch_Data[6] == 1)
 		chassis.Control_Status = back;
+	else 
+		chassis.Control_Status = safe;
 	//通信方面
 	if(Game_Pad_Key_Data[4] == 1)
  		Tell_Yao_Xuan("fold");
@@ -108,7 +100,7 @@ void GamePad_Data_Cla(void){
 	chassis.Flagof.GamePad_Accel  = Game_Pad_Key_Data[21];
 	chassis.Flagof.GamePad_Slow  = Game_Pad_Key_Data[8];
 	//
-	chassis.Flagof.GamePad_Inverse = GamePad_Timer(Game_Pad_Key_Data[7],0,200)?(!chassis.Flagof.GamePad_Inverse):chassis.Flagof.GamePad_Inverse;
+	chassis.Flagof.GamePad_Inverse = GamePad_Trigger(Game_Pad_Key_Data[7],0,200)?(!chassis.Flagof.GamePad_Inverse):chassis.Flagof.GamePad_Inverse;
 	//清空码盘
 	if(Game_Pad_Key_Data[5] == 1){
  		Odometer_Clear();
