@@ -5,6 +5,25 @@
 #include "Can_Bsp.h"
 #include "string.h"
 #include "Flow.h"
+
+/*///////////////////////////////////
+1.找到最近的篮筐半径
+2.设置死区 只有到达死去才会自锁
+3.动态设置所篮筐角度死区 距离越近 并且速度越慢 角度死区越小
+
+
+*//////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
 struct Car car;
 struct Point home_point = {                              
   .x = 600,
@@ -71,21 +90,88 @@ void Run_Point_Test(void){
 }
 
 ////////////////////////////////////编码器偏置测试//////////////////////////////////////////////
-char odometer_offset_finish_flag;
-float odometer_last_r;
-void Odometer_Offset_Flow(void){
-	Chassis_Velocity_Out(0,0,920);
-	if(odometer_offset_finish_flag == 0){
-		Send_Put_Data(0,site.now.r);
-		send_flag = 1;
-	}
-	if(ang2rad(site.now.r) - odometer_last_r < -3)
-		odometer_offset_finish_flag = 1;
-	odometer_last_r = ang2rad(site.now.r);
+#define BaksetNearest_Dis 1030
+struct {
+	float velocity_gain;
+	float accel_gain;
+
+	
+	float p;
+	float i;
+	float d;
+
+	float predict_step;
+	
+	float error_last;
+	float itotal;
+	float ilimit;
+	float istart;
+	float iend;
+	float outlimit;
+}bp;
+void Basket_PIDInit(void){
+	bp.p = 70;
+	bp.d = 8;
+	bp.i = 3;
+	bp.istart = 1.5;
+	bp.iend = 7;
+	bp.ilimit = 780;
+	bp.outlimit = 4500;
+	bp.accel_gain = 0.3;
+	bp.velocity_gain = 0.15;
+	bp.predict_step = 0.23;
 }
-void Odometer_Offset_Test_Clear(void){
-	odometer_offset_finish_flag = 0;
-  odometer_last_r = ang2rad(site.now.r);
+/*/////////////////////////////////////////
+一些小技巧
+1.当error小于一定程度的时候 会限制P的输出P会乘较小的增益 i会直接等于0
+2.设置I的起始积分和终止积分 
+3.
+*///////////////////////////////////////////
+
+float BasketAngle_PIDOut(void){
+	float error = rad2ang(vision.basket.ladar2basketangle) - bp.predict_step * site.gyro_pos.omiga;
+	float out;
+	float p = bp.p * error;
+	float gain = Limit(bp.velocity_gain * hypot(site.gyro_pos.with_odo_vx, site.gyro_pos.with_odo_vy) + bp.accel_gain * hypot(site.gyro_pos.accx, site.gyro_pos.accy), 1, 4);
+	float d = bp.d * (error - bp.error_last);
+	
+	bp.error_last = error;                                                                                                                                                                          
+	if(fabs(error) < bp.istart){
+		gain *= Limit(pow(error / bp.istart,3),0,1);
+		bp.itotal *= gain;
+	}
+	else if ((fabs(error) > bp.istart) && (fabs(error) < bp.iend))
+		bp.itotal = Limit(bp.itotal + bp.i * error, -bp.ilimit, bp.ilimit);
+	
+	out = Limit(gain*p + bp.itotal, -bp.outlimit, bp.outlimit);
+	return out;
+}
+void GoToNearest_BasketPoint(void){
+	//动态设置参数 1.设置死区  
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	float PreDictDis = vision.basket.ladar2basketdis + 60 * site.car_pos.row_vx;
+	float v = Limit(2 *PreDictDis,1200,10000);
+	float angle = vision.basket.ladar2basketangle;
+	if(PreDictDis > BaksetNearest_Dis)
+		Chassis_Velocity_Out(v * sin(angle),v * cos(angle),BasketAngle_PIDOut());
+	else 
+		Self_Lock_Out();
 }
 
 void Car_State_Decode(int id,unsigned char * data){

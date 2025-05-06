@@ -1,6 +1,5 @@
-#include "Television.h"
 #include "Chassis.h"
-
+#include "Flow.h"
 // 跑点以及底盘状态的结构体
 struct Chassis chassis;
 /////////////////////////////////////////////舵轮输出相关
@@ -95,28 +94,32 @@ void GamePad_Velocity_R1DirNoheader(void)
 	float r = (chassis.Flagof.GamePad_Inverse == 1)? site.now.r + 90:site.now.r;
 	float y = (float)rocker_y * cos(ang2rad(r)) + rocker_x * sin(ang2rad(r));
 	float x = (float)rocker_x * cos(ang2rad(r)) - rocker_y * sin(ang2rad(r));
-	Chassis_Velocity_Out(x * Rocker_GainT, y * Rocker_GainT, Correct_Angle(R1.oppsite_angle));
+	Chassis_Velocity_Out(x * Rocker_GainT, y * Rocker_GainT, BasketAngle_PIDOut());
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////跑点相关///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////三种跑法：1.位置PID 2.速度PID 3.位置PID+速度PID////////////////////////////////////////////////////////////////////////////////////
-void Set_Target_Point(struct Point point)
-{
+void Set_Target_Point(struct Point point){
 	memcpy(&site.target, &point, sizeof(point));
 }
-struct {
+struct cr_parameter{
 	float velocity_gain;
 	float accel_gain;
 
+	
 	float p;
 	float i;
 	float d;
 
+	float predict_step;
+	
 	float error_last;
 	float itotal;
 	float ilimit;
 	float istart;
+	float iend;
 	float outlimit;
-}cr;
+};
+struct cr_parameter cr;
 float Correct_Angle(float target){
 	float error = target - site.now.r;
 	float out;
@@ -136,15 +139,16 @@ float Correct_Angle(float target){
 	return out;
 }
 void Correct_Angle_Par_Init(void){
+	//////////////默认参数
 	cr.p = 55;
 	cr.d = 3;
 	cr.i = 3;
 	cr.ilimit = 800;
 	cr.istart = 4;
 	cr.outlimit = 5000;
-	                   
 	cr.accel_gain = 0.35;
 	cr.velocity_gain = 0.2;
+	/////////////锁篮筐参数
 }
 
 /////////////////////////////////////////4.位置闭环单向PID
@@ -312,7 +316,6 @@ void Turn_Motor_Decode(int id, unsigned char *data){
 		chassis.motor.turn[behind_wheel].angle_now = HO7213_Decode_for_FDC(data) - behind_offset;
 	else return;
 }
-
 ////////////////////////
 void Dribble_Flow(void){
 

@@ -18,6 +18,7 @@ struct EKF ekf_y = {
 void Location_Type_Choose(void){
 	site.now.x = site.enc_pos.row_x;
 	site.now.y = site.enc_pos.row_y;
+	site.now.r = site.gyro_pos.r;
 }
 //////////////////////////////////////////////像雷达一样在dt35的基础上做积分
 void DT35_Fuse_With_Odometer(float dt){

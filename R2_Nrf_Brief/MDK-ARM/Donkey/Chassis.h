@@ -109,8 +109,6 @@ unsigned char Near_Point(struct Point point);
 //自动自锁
 void Self_Lock_Auto(void);
 void Self_Lock_Out(void);
-//s输入角度目标值 输出角度PID的输出值
-float Correct_Angle(float target);
 
 void Mark_PID_Par_Init(void);
 void Position_With_Mark_PID_Run(void);
@@ -118,8 +116,6 @@ void Position_With_Mark_PID_Run(void);
 extern int Dribble_Begin;
 void Dribble_Flow(void);
 void Debug_Detect(void);
-
-
 #endif
 
 

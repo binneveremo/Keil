@@ -30,7 +30,7 @@ void motor_control(void const * argument)
 				GamePad_Velocity_R1DirNoheader();
 			break;
 			case flow:
-				Flow();
+				GoToNearest_BasketPoint();
 			break;
 			case back:
 				Back();
@@ -63,6 +63,7 @@ void location(void const * argument)
 {
   for(;;)
   {
+		Vision_Basket_Decode();
 		//YIS506_Fuse_With_Ladar_Angle(500);
 		//陀螺仪解算
 	  YIS506_Decode();

@@ -44,6 +44,17 @@ extern char Odometer_offset_finish_flag;
 void Flow_Test2(void);
 void Back_ToReset(void);
 void Back(void);
+
+
+
+
+
+
+void Basket_PIDInit(void);
+float BasketAngle_PIDOut(void);
+
+
+void GoToNearest_BasketPoint(void);
 #endif
 
 
