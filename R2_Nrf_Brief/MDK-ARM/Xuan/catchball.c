@@ -9,16 +9,16 @@ CatchStateFlag catch_sf = {0};
 
 // Target Positions
 float Init_Pos = 35;
-float CatchBall_Pos = 18;
+float CatchBall_Pos = 15.5;
 float Defend_Pos = -75;
-float PreDunk_Pos = 8;
+float PreDunk_Pos = 12;
 
 // Control Parameters for Position HOLDING (Mapped to Overall_States enum indices)
 // Indices:          {Initialize, CatchingBall, Defend, PreDunk, BackToFold}
 float Kp_Hold[5] =   {0.023,      0.2,          0.28,   0.2,     0.023     }; 
 float Kd_Hold[5] =   {0,          0.02,         0.02,   0.06,    0         };      
 float Trq_Hold[5]=   {0,          0,            0,      -0.5,    0         };           
-float Pos_Target[5]= {35,         18,           -75,    8,       35        };         
+float Pos_Target[5]= {35,         15.5,         -75,    12,      35        };         
 
 
 // Control Parameters for Velocity MOVEMENT (Based on original SpdUp/SpdDown)

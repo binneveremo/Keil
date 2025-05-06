@@ -40,9 +40,6 @@ void Enc_VXVY_Fuse_With_Gyro_AXAY(float dt){
 	site.car_pos.vy = EKF_Filter(&ekf_y,site.car_pos.row_vy,site.car_pos.ay*dt / 1000);
 	site.gyro_pos.with_odo_vx  = site.car_pos.vx * cos(ang2rad(site.now.r)) - site.car_pos.vy * sin(ang2rad(site.now.r));
 	site.gyro_pos.with_odo_vy  = site.car_pos.vx * sin(ang2rad(site.now.r)) + site.car_pos.vy * cos(ang2rad(site.now.r));
-
-	//site.gyro_pos.with_odo_vx = EKF_Filter(&ekf_x,site.enc_pos.row_vx,site.gyro_pos.accx*dt / 1000);
-  //site.gyro_pos.with_odo_vy = EKF_Filter(&ekf_y,site.enc_pos.row_vy,site.gyro_pos.accy*dt / 1000);
 }
 //////////////////////////////////////////////////////码盘与陀螺仪与雷达速度融合计算/////////////////////////////////////////////////////////////
 struct EKF odo_ladar_ekf_x = {

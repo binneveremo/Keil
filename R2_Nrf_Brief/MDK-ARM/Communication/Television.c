@@ -23,6 +23,7 @@ void Get_Vision_Data(int header,unsigned char * data){
 	switch(header){
 		case basket_id:
 			memcpy(vision.basket.data,data,8);
+			vision.basket.get_flag = 1;
 		break;
 		default:
 			break;

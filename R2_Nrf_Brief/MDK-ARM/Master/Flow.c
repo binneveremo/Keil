@@ -15,15 +15,6 @@
 *//////////////////////////////////////////
 
 
-
-
-
-
-
-
-
-
-
 struct Car car;
 struct Point home_point = {                              
   .x = 600,
@@ -61,18 +52,7 @@ void Flow(void){
 		}
 	}
 	else if(car.state == dunk){
-		//Tell_Yao_Xuan("jump");
-		car.state = back;
-	}
-	else if(car.state == back){
-		if(car.flag_of.back == 1){
-			Set_Target_Point(home_point);
-			Position_With_Mark_PID_Run();
-		}
-		if((car.flag_of.back == 1) && (Near_Point(home_point) == 1)){
-			car.state = end;
-			car.flag_of.back = 0;  
-		}
+		Tell_Yao_Xuan("jump");
 	}
 	else if(car.state == end){
 	
@@ -90,88 +70,126 @@ void Run_Point_Test(void){
 }
 
 ////////////////////////////////////编码器偏置测试//////////////////////////////////////////////
-#define BaksetNearest_Dis 1030
-struct {
-	float velocity_gain;
-	float accel_gain;
-
-	
-	float p;
-	float i;
-	float d;
-
-	float predict_step;
-	
-	float error_last;
-	float itotal;
-	float ilimit;
-	float istart;
-	float iend;
-	float outlimit;
-}bp;
-void Basket_PIDInit(void){
-	bp.p = 70;
-	bp.d = 8;
-	bp.i = 3;
-	bp.istart = 1.5;
-	bp.iend = 7;
-	bp.ilimit = 780;
-	bp.outlimit = 4500;
-	bp.accel_gain = 0.3;
-	bp.velocity_gain = 0.15;
-	bp.predict_step = 0.23;
+#define BaksetNearest_Dis 1015
+struct Basket_Lock{
+	enum{
+		far,
+		near,
+		middle,
+	}status;
+	struct {
+		float velocity_gain;
+		float accel_gain;
+		float p;
+		float i;
+		float d;
+		float predict_step;
+		float error_last;
+		float itotal;
+		float ilimit;
+		float istart;
+		float iend;
+		float outlimit;
+	}pid;
+	struct{
+		float basketdis;
+		float nearbasketdis;
+		float farbasketdis;
+		float anglebetween_ladarandpole;
+	} parameter;
+	struct {
+		float angle;
+		float precent;
+		float omiga;
+		float gain;
+		float basket_angle;
+	}prediction;
+};
+struct Basket_Lock bl;
+void BasketLock_ParameterInit(void){
+	bl.pid.p = 70;
+	bl.pid.d = 8;
+	bl.pid.i = 2;
+	bl.pid.istart = 0.7;
+	bl.pid.iend = 7;
+	bl.pid.ilimit = 1000;
+	bl.pid.outlimit = 4500;
+	bl.pid.accel_gain = 0.3;
+	bl.pid.velocity_gain = 0.15;
+	bl.pid.predict_step = 0.15;
+	//想让车身偏左 就给大
+	bl.parameter.anglebetween_ladarandpole = 5;
+	//非常非常极限扣进的距离
+//	bl.parameter.basketdis = 830;
+//	bl.parameter.farbasketdis = 860;
+//	bl.parameter.nearbasketdis = 800;
+	//比较稳的能扣进
+	bl.parameter.basketdis = 810;
+	bl.parameter.farbasketdis = 840;
+	bl.parameter.nearbasketdis = 780;
+	//
+	bl.prediction.gain = 20;
 }
+void JudgeBasketPos(void){
+	bl.status = (vision.basket.ladar2basketdis > bl.parameter.farbasketdis)?far:((vision.basket.ladar2basketdis < bl.parameter.nearbasketdis)?near:middle);
+}
+void Basket_PIDInitReSet(void){
+
+
+
+}
+
+
 /*/////////////////////////////////////////
 一些小技巧
 1.当error小于一定程度的时候 会限制P的输出P会乘较小的增益 i会直接等于0
 2.设置I的起始积分和终止积分 
 3.
 *///////////////////////////////////////////
-
+float PreDiction_BasketAngle(void){
+	bl.prediction.angle = sin(vision.basket.ladar2basketangle - atan2f(site.gyro_pos.with_odo_vy,site.gyro_pos.with_odo_vx));
+	bl.prediction.precent = hypot(site.car_pos.row_vx,site.car_pos.row_vy) / vision.basket.ladar2basketdis;
+	bl.prediction.omiga = bl.prediction.angle * bl.prediction.precent * bl.prediction.gain;
+	
+	bl.prediction.basket_angle = (vision.basket.get_flag == 1)?rad2ang(vision.basket.ladar2basketangle):(bl.prediction.basket_angle += bl.prediction.omiga);
+	vision.basket.get_flag = (vision.basket.get_flag == 1)?0:vision.basket.get_flag; 
+	return bl.prediction.basket_angle;
+}
 float BasketAngle_PIDOut(void){
-	float error = rad2ang(vision.basket.ladar2basketangle) - bp.predict_step * site.gyro_pos.omiga;
+	float error = rad2ang(vision.basket.ladar2basketangle) + PreDiction_BasketAngle() - bl.pid.predict_step * site.gyro_pos.omiga +   bl.parameter.anglebetween_ladarandpole ;
 	float out;
-	float p = bp.p * error;
-	float gain = Limit(bp.velocity_gain * hypot(site.gyro_pos.with_odo_vx, site.gyro_pos.with_odo_vy) + bp.accel_gain * hypot(site.gyro_pos.accx, site.gyro_pos.accy), 1, 4);
-	float d = bp.d * (error - bp.error_last);
+	float p = bl.pid.p * error;
+	float gain = Limit(bl.pid.velocity_gain * hypot(site.gyro_pos.with_odo_vx, site.gyro_pos.with_odo_vy) + bl.pid.accel_gain * hypot(site.gyro_pos.accx, site.gyro_pos.accy), 1, 4);
+	float d = bl.pid.d * (error - bl.pid.error_last);
 	
-	bp.error_last = error;                                                                                                                                                                          
-	if(fabs(error) < bp.istart){
-		gain *= Limit(pow(error / bp.istart,3),0,1);
-		bp.itotal *= gain;
+	bl.pid.error_last = error;                                                                                                                                                                          
+	if(fabs(error) < bl.pid.istart){
+		gain *= Limit(pow(error / bl.pid.istart,3),0,1);
+		bl.pid.itotal *= gain;
 	}
-	else if ((fabs(error) > bp.istart) && (fabs(error) < bp.iend))
-		bp.itotal = Limit(bp.itotal + bp.i * error, -bp.ilimit, bp.ilimit);
+	else if ((fabs(error) > bl.pid.istart) && (fabs(error) < bl.pid.iend))
+		bl.pid.itotal = Limit(bl.pid.itotal + bl.pid.i * error, -bl.pid.ilimit, bl.pid.ilimit);
 	
-	out = Limit(gain*p + bp.itotal, -bp.outlimit, bp.outlimit);
+	out = Limit(gain*p + bl.pid.itotal, -bl.pid.outlimit, bl.pid.outlimit);
 	return out;
 }
 void GoToNearest_BasketPoint(void){
-	//动态设置参数 1.设置死区  
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	//动态设置参数 1.设置死区 
+	JudgeBasketPos();
 	float PreDictDis = vision.basket.ladar2basketdis + 60 * site.car_pos.row_vx;
-	float v = Limit(2 *PreDictDis,1200,10000);
+	float v = Limit(2 *(PreDictDis - bl.parameter.basketdis),VESC_START_VELOCITY,10000);
 	float angle = vision.basket.ladar2basketangle;
-	if(PreDictDis > BaksetNearest_Dis)
-		Chassis_Velocity_Out(v * sin(angle),v * cos(angle),BasketAngle_PIDOut());
-	else 
-		Self_Lock_Out();
+	switch(bl.status){
+		case far:
+			Chassis_Velocity_Out(v * sin(angle),v * cos(angle),BasketAngle_PIDOut());
+			break;
+		case middle:
+			Self_Lock_Out();
+			break;
+		case near:
+			Chassis_Velocity_Out(-v * sin(angle),-v * cos(angle),BasketAngle_PIDOut());
+			break;
+	}
 }
 
 void Car_State_Decode(int id,unsigned char * data){

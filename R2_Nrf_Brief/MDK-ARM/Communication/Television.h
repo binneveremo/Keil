@@ -22,6 +22,7 @@ struct Vision{
 	}guard;
 	struct {
 		unsigned char data[8];
+		char get_flag;
 		float ladar2basketangle;
 		float ladar2basketdis;
 		struct Point basket_pos;
