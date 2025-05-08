@@ -15,6 +15,7 @@
 
 #include "CPU_Load.h"
 #include "Interact.h"
+#include "Basket.h"
 void motor_control(void const * argument)
 {
    for(;;)
@@ -29,16 +30,20 @@ void motor_control(void const * argument)
 			case gamepad_r1dir_noheader:
 				GamePad_Velocity_R1DirNoheader();
 			break;
-			case flow:
-				GoToNearest_BasketPoint();
+			case progress:
+				BasketRunPoint();
 			break;
 			case back:
 				Back();
 			break;
+			case dribble:
+				Dribbble_Flow();
 			case safe:
 				
 			break;
 		}
+		//察觉到空置状态的变化
+		ControlStatus_Detect();
 		Self_Lock_Auto();
 		VectorWheel_SetSpeed();
 	  VectorWheel_SetAngle();
@@ -49,12 +54,12 @@ void communication(void const * argument)
 {
   for(;;)
   {
-		
+		Vision_Basket_Decode();
 		//手柄数据解析
 		Get_GamePad_Data();
 	  GamePad_Data_Cla();
-		Wireless_Send();
-    osDelay(40);
+	  Wireless_Send();
+    osDelay(5);
 	}
 	
 }
@@ -63,7 +68,6 @@ void location(void const * argument)
 {
   for(;;)
   {
-		Vision_Basket_Decode();
 		//YIS506_Fuse_With_Ladar_Angle(500);
 		//陀螺仪解算
 	  YIS506_Decode();
@@ -79,6 +83,8 @@ void location(void const * argument)
     Location_Type_Choose();
 		//向视觉 发送定位以及速度
 		Send_Velocity_Vision();
+		//插帧得到篮筐和当前坐标的相关信息
+		BasketPositionCal_AccordingVision(2);
 		//DT35解算
 		osDelay(2);
   }

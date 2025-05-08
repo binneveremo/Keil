@@ -2,7 +2,7 @@
 #include "Send.h"
 #include "Global.h"
 #define send_uart huart1
-#define wireless_uart huart10
+#define wireless_uart huart3
 
 #define RECEIVE_R1 1
 
@@ -12,7 +12,6 @@
 #define wireless_data_num 16
 
 #endif
-
 
 int send_flag;
 char send_data[40];
@@ -25,8 +24,6 @@ void Send_Put_Data(char index,float data){
 	send_union.float_data[index] = data;
 }
 void Send_Float_Data(char num){
-	if(send_flag == 0)
-		return;
 	//计算前几位的值
 	float total; 
 	for(char i = 0; i < num;i++)
@@ -62,7 +59,8 @@ void Wireless_Receive_Decode(UART_HandleTypeDef *huart){
 void Wireless_Send(void){
 	unsigned char send[10];
 	send[0] = 0xAA;
-	send_union.float_data[0] = site.now.x + 250;
+//	send_union.float_data[0] = site.now.x + 250;
+	send_union.float_data[0] = site.now.x;
 	send_union.float_data[1] = site.now.y;
 	memcpy(&send[1],send_union.uint8_data,8);
 	send[9] = chassis.Flagof.self_lock;

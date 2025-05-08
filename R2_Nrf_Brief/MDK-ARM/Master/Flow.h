@@ -3,13 +3,14 @@
 
 #include "Send.h"
 
-struct Car {
+struct Flow {
 	struct {
 		char received;
 		char jumped;
 		char defend_send;
 		char jump_send;
 		char back;
+		char dribble;
 	}flag_of;
 	enum{
 		start,
@@ -18,12 +19,17 @@ struct Car {
 		dunk,
 		end,
 	}state;
+	
+	
 };
 
 extern struct Basket_Parmeter bp;
 extern struct Point dunk_point;
 extern struct Point basket_point;
 extern struct Car car;
+
+void ControlStatus_Detect(void);
+
 
 void Flow(void);
 void Tell_Guo_Xuan_Jia(char *message);
@@ -46,7 +52,7 @@ extern char Odometer_offset_finish_flag;
 void Flow_Test2(void);
 void Back_ToReset(void);
 void Back(void);
-
+void Dribbble_Flow(void);
 
 
 

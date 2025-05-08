@@ -1,4 +1,5 @@
 #include "Chassis.h"
+#include "Basket.h"
 #include "Flow.h"
 // 跑点以及底盘状态的结构体
 struct Chassis chassis;
@@ -124,7 +125,7 @@ float Correct_Angle(float target){
 	float error = target - site.now.r;
 	float out;
 	float p = cr.p * error;
-	float gain = Limit(cr.velocity_gain * hypot(site.gyro_pos.with_odo_vx, site.gyro_pos.with_odo_vy) + cr.accel_gain * hypot(site.gyro_pos.accx, site.gyro_pos.accy), 1, 4);
+	float gain = Limit(cr.velocity_gain * site.car.velocity_totalenc + cr.accel_gain * site.car.accel_totalgyro, 1, 4);
 	float d = cr.d * (error - cr.error_last);
 	
 	cr.error_last = error;                                                                                                                                                                          
@@ -169,7 +170,7 @@ void Mark_PID_Par_Init(void){
 	mark.brake_ilimit = 1000;
 }
 //////////////////////跑点的速度限制       根据最大速度最大速度 10000  那么就会限制刹车距离为 mark.brake_percent * 10000
-void Position_With_Mark_PID_Run(void)
+void Position_With_Mark_PID_Run(char * anglelockdir)
 {
 	static struct Point last;
 	if(Point_Distance(last,site.target) > 100){
@@ -177,8 +178,8 @@ void Position_With_Mark_PID_Run(void)
 		mark.brake_distance = Limit(mark.brake_percent*mark.total_dis,800, mark.outlimit * mark.brake_percent);
 		memcpy(&last,&site.target,sizeof(last));
 	}
-	float xerror = site.target.x - site.now.x;
-	float yerror = site.target.y - site.now.y;
+	float xerror = site.target.x - ((strcmp(anglelockdir,"basket") == 0)?bl.position.now_interp.x:site.now.x);
+	float yerror = site.target.y - ((strcmp(anglelockdir,"basket") == 0)?bl.position.now_interp.y:site.now.y);
 	float rerror = site.target.r - site.now.r;
 
 	mark.gain = (hypot(xerror,yerror) > mark.brake_distance)?1:mark.brake_gain;
@@ -197,10 +198,12 @@ void Position_With_Mark_PID_Run(void)
 
 	// 请记住 第一项为front left 角速度
 	float vnow = Limit(hypot(mark.outx, mark.outy), -outlimit,outlimit);
-	float angle = atan2f(yerror, xerror) - ang2rad(site.now.r);
+	float angle = atan2f(yerror, xerror) - ang2rad(bl.position.now_interp.r);
 
+	Chassis_Velocity_Out(vnow * sin(angle),vnow * cos(angle),(strcmp(anglelockdir,"basket") == 0)?BasketAngle_PIDOut():Correct_Angle(site.target.r));
 	
-	Chassis_Velocity_Out(vnow * sin(angle),vnow * cos(angle),Correct_Angle(site.target.r));
+	if((strcmp(anglelockdir,"basket") == 0) && (fabs(bl.position.basket_target.x - bl.position.now_interp.x) < 15) && (fabs(bl.position.basket_target.y - bl.position.now_interp.y) < 15))
+		Self_Lock_Out();
 }
 //////////////////////////////////////////////////////////////跑点自动自锁 ： 距离越来越远 、 速度很小不足以驱动  /////////////////////////////////////////////////////////////////////
 unsigned char Velocity_Equal_Zero(void){
@@ -211,8 +214,6 @@ unsigned char Velocity_Equal_Zero(void){
 		vx_past[i] = vx_past[i + 1];
 		vy_past[i] = vy_past[i + 1];
 	} 
-	vx_past[9] = site.enc_pos.row_vx;
-	vy_past[9] = site.enc_pos.row_vy;
 	for (int i = 0; i < 10; i++)
 	{
 		if (vx_past[i] < 0.01)
@@ -272,15 +273,21 @@ void Self_Lock_Auto(void){
 			chassis.Flagof.self_lock = 0;
 	}
 	// 跑点时候的自动自锁
-	else if ((chassis.Control_Status == flow) || (chassis.Control_Status == back))
-	{
-		if (((fabs(site.target.x - site.now.x) < xdeath) && (fabs(site.target.y - site.now.y) < ydeath) && (fabs(site.target.r - site.now.r) < rdeath)))
-			chassis.Flagof.self_lock = 1;
+//	else if ((chassis.Control_Status != gamepad_standard) && (chassis.Control_Status != gamepad_free_noheader) && (chassis.Control_Status != gamepad_r1dir_noheader))
+//	{
+//		if (((fabs(site.target.x - site.now.x) < xdeath) && (fabs(site.target.y - site.now.y) < ydeath) && (fabs(site.target.r - site.now.r) < rdeath)))
+//			chassis.Flagof.self_lock = 1;
 //		if ((fabs(site.target.x - site.now.x) < 2 * xdeath) && (fabs(site.target.y - site.now.y) < 2 * ydeath) && (fabs(site.target.r - site.now.r) < rdeath) && (Becoming_Longer() == 1))
 //			chassis.Flagof.self_lock = 1;
 //		if ((fabs(site.target.x - site.now.x) < 2 * xdeath) && (fabs(site.target.y - site.now.y) < 2 * ydeath) && (fabs(site.target.r - site.now.r) < rdeath) && (Velocity_Equal_Zero() == 1))
 //			chassis.Flagof.self_lock = 1;
-		if ((fabs(site.target.x - site.now.x) > 10 * xdeath) || (fabs(site.target.y - site.now.y) > 6 * ydeath) || (fabs(site.target.r - site.now.r) > 5 * rdeath))
+//		if ((fabs(site.target.x - site.now.x) > 10 * xdeath) || (fabs(site.target.y - site.now.y) > 6 * ydeath) || (fabs(site.target.r - site.now.r) > 5 * rdeath))
+//			chassis.Flagof.self_lock = 0;
+//	}
+	else if(chassis.Control_Status == progress){
+		if((fabs(bl.position.basket_target.x - bl.position.now_interp.x) < 10) && (fabs(bl.position.basket_target.y - bl.position.now_interp.y) < 10))
+			chassis.Flagof.self_lock = 1;
+		if((fabs(bl.position.basket_target.x - bl.position.now_interp.x) > 40) || (fabs(bl.position.basket_target.y - bl.position.now_interp.y) > 40))
 			chassis.Flagof.self_lock = 0;
 	}
 	// 视觉控制时候自动自锁

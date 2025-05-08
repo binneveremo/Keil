@@ -20,6 +20,7 @@ typedef struct
     uint8_t InMoveToDefend;
     uint8_t InMoveToPreDunk;
     uint8_t InMoveToBackToFold;
+		uint8_t IsError;
 
     // Consider adding other status flags like AtTargetPositionSettled, Folded, etc.
     // uint8_t AtTargetPositionSettled;
@@ -48,8 +49,18 @@ typedef enum
     CatchingBall = 1,    
     Defend = 2,         
     PreDunk = 3,        
-    BackToFold = 4     
+    BackToFold = 4,
+		Error = 5
 } Overall_States;
+
+typedef struct
+{
+	float start_pos;
+	float end_pos;
+	uint32_t start_time_ms;
+	uint32_t duration_ms;
+	
+}Trajectory;
 
 
 // Function Prototypes
@@ -60,7 +71,6 @@ void Overall_Control();
 
 // Helper functions
 bool IsAtTargetPositionSettled(float target_pos); 
-bool IsNearTargetPosition(float target_pos); 
 
 
 #endif // CATCHBALL_H

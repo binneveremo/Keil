@@ -26,4 +26,5 @@ float Point_Distance(struct Point a,struct Point b);
 char Point_Difference(struct Point a,struct Point b);
 char If_Rad_Oppsite(float rad1, float rad2, float ang);
 float char2float(unsigned char * data);
+float NormalizeAng_Single(float ang);
 #endif

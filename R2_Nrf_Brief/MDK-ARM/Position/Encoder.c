@@ -49,29 +49,31 @@ void Encoder_XY_VX_VY_Cal(int dt){
   Diff_Odometer();
 	//计算旋转补偿
 	//计算车体速度
-	float row_dx = odometer.do1 / ratio;
-	float row_dy = odometer.do2 / ratio;
+	float dx_car = odometer.do1 / ratio;
+	float dy_car = odometer.do2 / ratio;
 	//计算车体坐标系的速度
-	site.car_pos.row_vx = row_dx / dt;
-	site.car_pos.row_vy = row_dy / dt;
 	//初步计算场地坐标系的dx dy
-	float dx = row_dx* cos(ang2rad(site.now.r)) - row_dy*sin(ang2rad(site.now.r));
-	float dy = row_dx* sin(ang2rad(site.now.r)) + row_dy*cos(ang2rad(site.now.r));
+	float dx_field = dx_car* cos(ang2rad(site.now.r)) - dy_car*sin(ang2rad(site.now.r));
+	float dy_field = dx_car* sin(ang2rad(site.now.r)) + dy_car*cos(ang2rad(site.now.r));
 	//计算误差角度之后的dx dy
-	odometer.dx = dx* cos(odometer.offset_angle) - dy*sin(odometer.offset_angle);
-	odometer.dy = dy* cos(odometer.offset_angle) + dx*sin(odometer.offset_angle);
+	odometer.dx_field = dx_field* cos(odometer.offset_angle) - dy_field*sin(odometer.offset_angle);
+	odometer.dy_field = dy_field* cos(odometer.offset_angle) + dx_field*sin(odometer.offset_angle);
 	//对 dx dy 进行积分
-	odometer.x = odometer.dx + odometer.x;
-	odometer.y = odometer.dy + odometer.y;
+	odometer.x_field = odometer.dx_field + odometer.x_field;
+	odometer.y_field = odometer.dy_field + odometer.y_field;
+	////与定位系统交互
+	site.car.vx_enc = dx_car / dt;
+	site.car.vy_enc = dy_car / dt;
+	site.car.velocity_totalenc = hypot(site.car.vx_enc,site.car.vy_enc);
 	//与定位系统交互
-	site.enc_pos.row_x = odometer.x + 400;
-	site.enc_pos.row_y = odometer.y - 375;
+	site.field.x_enc = odometer.x_field + 400;
+	site.field.y_enc = odometer.y_field - 375;
 	//计算位置微分 也就是速度
-	site.enc_pos.row_vx = odometer.x / dt;
-	site.enc_pos.row_vy = odometer.y / dt;
+	site.car.vx_enc = odometer.dx_field / dt;
+	site.car.vy_enc = odometer.dy_field / dt;
 	//计算行驶过的累计历程
-	odometer.xdis += fabs(odometer.dx);
-	odometer.ydis += fabs(odometer.dy);
+	odometer.xdis += fabs(odometer.dx_field);
+	odometer.ydis += fabs(odometer.dy_field);
 }
 void Encoder_Init(void){
 	Set_ZeroPoint(0x01);
@@ -83,15 +85,10 @@ void Encoder_Init(void){
 	odometer.offset_angle = 0;
 }
 void Odometer_Clear(void){
-	odometer.x = 0;
-	odometer.y = 0;
+	odometer.x_field = 0;
+	odometer.y_field = 0;
 }
-void Set_Odometer_X(float x){
-	odometer.x = x * 25.32;
-}
-void Set_Odometer_Y(float y){
-	odometer.y = y * 25.32;
-}
+
 
 
 

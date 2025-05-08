@@ -3,6 +3,7 @@
 
 #include "Communication.h"
 #include "Location.h"
+#include "string.h"
 #include "Global.h"
 #include "HO7213.h"
 #include "mine.h"
@@ -15,25 +16,25 @@
 #define right_wheel 2
 #define behind_wheel 3
 //转向轮 发送的ID
-#define front_turn_send_id 4
+#define front_turn_send_id 1
 #define left_turn_send_id 3
 #define right_turn_send_id 2
-#define behind_turn_send_id 1
+#define behind_turn_send_id 4
 //转向轮 回传的ID
-#define front_turn_receive_id 4
-#define left_turn_receive_id 3
-#define right_turn_receive_id 2
-#define behind_turn_receive_id 1
+#define front_turn_receive_id 101
+#define left_turn_receive_id 103
+#define right_turn_receive_id 102
+#define behind_turn_receive_id 104
 //驱动轮 VESC的ID
-#define front_drive_id 9
+#define front_drive_id 6
 #define left_drive_id 8
 #define right_drive_id 7
-#define behind_drive_id 6
+#define behind_drive_id 9
 //左转 偏置变大
-#define front_offset 174
-#define left_offset 174
-#define right_offset  0
-#define behind_offset  -156
+#define front_offset -15
+#define left_offset 75
+#define right_offset  94
+#define behind_offset  -112
 
 struct Mark
 {
@@ -65,7 +66,8 @@ struct Chassis{
 			gamepad_standard,
 			gamepad_free_noheader,
 			gamepad_r1dir_noheader,
-			flow,
+			progress,
+			dribble,
 			back,
 	}Control_Status;
 	struct {
@@ -111,7 +113,7 @@ void Self_Lock_Auto(void);
 void Self_Lock_Out(void);
 
 void Mark_PID_Par_Init(void);
-void Position_With_Mark_PID_Run(void);
+void Position_With_Mark_PID_Run(char * anglelockdir);
 
 extern int Dribble_Begin;
 void Dribble_Flow(void);

@@ -70,7 +70,9 @@ void GamePad_Data_Cla(void){
 	else if(Game_Pad_Switch_Data[0] == 1)
 		chassis.Control_Status = gamepad_r1dir_noheader;
 	else if(Game_Pad_Switch_Data[8] == 1)
-		chassis.Control_Status = flow;
+		chassis.Control_Status = progress;
+	else if(Game_Pad_Switch_Data[7] == 1)
+		chassis.Control_Status = dribble;
 	else if(Game_Pad_Switch_Data[6] == 1)
 		chassis.Control_Status = back;
 	else 
@@ -89,7 +91,7 @@ void GamePad_Data_Cla(void){
 	if(Game_Pad_Key_Data[18] == 1)
  		Tell_Yao_Xuan("down");
 	if(Game_Pad_Key_Data[17] == 1)
- 		Tell_Yao_Xuan("dibble");
+ 		Tell_Yao_Xuan("dribble");
 	if(Game_Pad_Key_Data[16] == 1)
  		Tell_Yao_Xuan("lift");
 	if(Game_Pad_Key_Data[15] == 1)
@@ -99,8 +101,10 @@ void GamePad_Data_Cla(void){
 	//加速和减速相关
 	chassis.Flagof.GamePad_Accel  = Game_Pad_Key_Data[21];
 	chassis.Flagof.GamePad_Slow  = Game_Pad_Key_Data[8];
-	//
+	//坐标系反转标志位
 	chassis.Flagof.GamePad_Inverse = GamePad_Trigger(Game_Pad_Key_Data[7],0,200)?(!chassis.Flagof.GamePad_Inverse):chassis.Flagof.GamePad_Inverse;
+	//vision.reset_flag = Game_Pad_Key_Data[1];
+	vision.reset_flag = (GamePad_Trigger(Game_Pad_Key_Data[1],1,200) == 1)?1:vision.reset_flag;
 	//清空码盘
 	if(Game_Pad_Key_Data[5] == 1){
  		Odometer_Clear();
@@ -110,7 +114,6 @@ void GamePad_Data_Cla(void){
 	if(Game_Pad_Key_Data[3] == 1)
 		Flow_Reset();
 	//运球复位相关
-	
 	//切换debug模式
 //	if(Game_Pad_Key_Data[19] == 1)
 //	 debug = Change_Debug_Mode(debug);

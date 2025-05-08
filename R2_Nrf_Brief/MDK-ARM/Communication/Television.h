@@ -10,27 +10,21 @@
 
 
 #define site_id  0x201
-#define basket_id 0xA1
+#define ladar_id 0xA1
 
 struct Vision{
 	struct {
-		struct Point row;
-		struct Point cal;
+		unsigned char data[20];
+		char get_flag;
+		struct Point now;
+		struct Point basket;
 	}ladar;
 	struct {
 		struct Point target;
 	}guard;
-	struct {
-		unsigned char data[8];
-		char get_flag;
-		float ladar2basketangle;
-		float ladar2basketdis;
-		struct Point basket_pos;
-		struct Point backward_ladarpos;
-		struct Point backward_carpos;
-	}basket;
 	uint8_uint32_float_union convert;
-	unsigned char send[12];
+	unsigned char send[16];
+	float reset_flag;
 };
 extern struct Vision vision;
 void Vision_Basket_Decode(void);

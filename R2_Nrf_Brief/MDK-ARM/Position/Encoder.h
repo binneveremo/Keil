@@ -13,10 +13,10 @@ struct Odometer {
 	
 	float do1;
 	float do2;
-	float dx;
-	float dy;
-	float x;
-	float y;
+	float dx_field;
+	float dy_field;
+	float x_field;
+	float y_field;
 
 	float offset_angle;
 	//x轴行驶过的里程
@@ -33,6 +33,5 @@ void Odometer_Clear(void);
 void Odometer_Clear_X(void);
 void Odometer_Clear_Y(void);
 void Get_Encoder_Data(int id,unsigned char * data);
-void Set_Odometer_X(float x);
-void Set_Odometer_Y(float y);
+
 #endif

@@ -1,25 +1,15 @@
 #include "Global.h"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 float ang2rad(float ang){
 	return ang*3.1415926f/180.0f;
 }
 float rad2ang(float rad){
 	return rad*180.0f/3.1415926f;
 }
+float NormalizeAng_Single(float ang){
+	return (ang > 180)?ang - 360:((ang < -180)?ang + 360:ang);
+}
+
+
 char If_Rad_Oppsite(float rad1, float rad2, float ang){
 	float differ = fabs(rad1 - rad2);
 	if(differ > 3.14)
