@@ -22,8 +22,6 @@ struct Flow {
 	
 	
 };
-
-extern struct Basket_Parmeter bp;
 extern struct Point dunk_point;
 extern struct Point basket_point;
 extern struct Car car;
@@ -55,14 +53,6 @@ void Back(void);
 void Dribbble_Flow(void);
 
 
-
-
-
-void BasketLock_ParameterInit(void);
-float BasketAngle_PIDOut(void);
-
-
-void GoToNearest_BasketPoint(void);
 #endif
 
 

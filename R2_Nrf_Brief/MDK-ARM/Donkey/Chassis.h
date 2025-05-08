@@ -31,10 +31,10 @@
 #define right_drive_id 7
 #define behind_drive_id 9
 //左转 偏置变大
-#define front_offset -15
-#define left_offset 75
-#define right_offset  94
-#define behind_offset  -112
+#define front_offset -13
+#define left_offset 72
+#define right_offset  100
+#define behind_offset  -111
 
 struct Mark
 {

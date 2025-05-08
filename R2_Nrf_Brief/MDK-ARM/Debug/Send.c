@@ -66,15 +66,6 @@ void Wireless_Send(void){
 	send[9] = chassis.Flagof.self_lock;
 	HAL_UART_Transmit(&wireless_uart, (unsigned char*)send, sizeof(send), HAL_MAX_DELAY);
  }
-//板子测试程序
-void Send_Test(void){
-	unsigned char send1[4] = {0x01,0x02,0x03,0x04};
-	HAL_UART_Transmit(&huart2, (unsigned char*)send1, sizeof(send1), HAL_MAX_DELAY);
-	unsigned char send2[4] = {0x04,0x03,0x02,0x01};
-	HAL_UART_Transmit(&huart6, (unsigned char*)send2, sizeof(send2), HAL_MAX_DELAY);
-	osDelay(4);
-}
-
 
 
 

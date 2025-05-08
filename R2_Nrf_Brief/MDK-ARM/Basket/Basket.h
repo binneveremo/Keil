@@ -3,28 +3,10 @@
 
 #include "Television.h"
 #include "Kalman.h"
+#include "Global.h"
 #include "math.h"
 
 struct Basket_Lock{
-	enum{
-		far,
-		near,
-		middle,
-	}status;
-	struct {
-		float velocity_gain;
-		float accel_gain;
-		float p;
-		float i;
-		float d;
-		float predict_step;
-		float error_last;
-		float itotal;
-		float ilimit;
-		float istart;
-		float iend;
-		float outlimit;
-	}pid;
 	struct{
 		float basketdis;
 		float anglebetween_ladarandpole;
@@ -35,19 +17,59 @@ struct Basket_Lock{
 		float ladar2baskety;
 		float ladar2basketdis;
 		float ladar2basketangle;
-		struct Point now_interp;
-		struct Point basket_target;
+		struct Point now_interp_vfield;
+		struct Point basket_target_vfield;
+		struct Point backwardladar_field;
 	}position;
 	struct {
 		char nearest_point;
 	}flagof;
 };
+struct BasketPosition_Lock 
+{
+	float p;
+	float i;
+	float istart;
+	float iend;
+	float ilimit;
+	float outlimit;
+	float gain;
+	float itotal_x;
+	float itotal_y;
+	float outx;
+	float outy;
+	///////新加的测试参数
+	float total_dis;
+	float brake_ilimit;
+	float brake_outlimit;
+	float brake_distance;
+	float brake_gain;
+	float brake_percent;
+};
+struct BasketAngle_Lock {
+	float p;
+	float i;
+	float predict_step;
+	float istart;
+	
+	float iend;
+	float itotal;
+	float ilimit;
+	float outlimit;
+};
+
+
 extern struct Basket_Lock bl;
+extern struct BasketAngle_Lock ba;
+extern struct BasketPosition_Lock  bp;
 void BasketPositionCal_AccordingVision(float dt);
-void BasketLock_ParameterInit(void);
-float BasketAngle_PIDOut(void);
-void BasketRunPoint_PIDParInit(void);
-void BasketRunPoint(void);
+
+void BasketAngleLock_ParInit(void);
+float BasketAngleLock(void);
+
+void BasketPositionLock_ParInit(void);
+void BasketPositionLock(void);
+
 #endif
 
 

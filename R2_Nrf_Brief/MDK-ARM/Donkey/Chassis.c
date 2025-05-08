@@ -14,9 +14,9 @@ void VectorWheel_SetSpeed(void)
 void VectorWheel_SetAngle(void)
 {
 	// Motor_Control_byFDCN(id,力矩, 速度 , 位置, 模式 , 使能, p, d, )
-	Motor_Control_byFDCN(front_turn_send_id, 2.5, 30, chassis.motor.turn[front_wheel].target_angle + front_offset, 2, 1, 70, 30, &hfdcan1);
-	Motor_Control_byFDCN(left_turn_send_id,  2.5, 30, chassis.motor.turn[left_wheel].target_angle  + left_offset,  2, 1, 70, 30, &hfdcan1);
-	Motor_Control_byFDCN(right_turn_send_id, 2.5, 30, chassis.motor.turn[right_wheel].target_angle + right_offset, 2, 1, 60, 27, &hfdcan1);
+	Motor_Control_byFDCN(front_turn_send_id, 2.5,  30, chassis.motor.turn[front_wheel].target_angle + front_offset, 2, 1, 70,  30, &hfdcan1);
+	Motor_Control_byFDCN(left_turn_send_id,  2.5,  30, chassis.motor.turn[left_wheel].target_angle  + left_offset,  2, 1, 70,  30, &hfdcan1);
+	Motor_Control_byFDCN(right_turn_send_id, 2.5,  30, chassis.motor.turn[right_wheel].target_angle + right_offset, 2, 1, 60,  27, &hfdcan1);
 	Motor_Control_byFDCN(behind_turn_send_id, 2.5, 30,chassis.motor.turn[behind_wheel].target_angle + behind_offset, 2, 1, 60, 27, &hfdcan1);
 }
 void Min_Angle_Cal(struct HO7213 *turn, struct VESC *drive, float target)
@@ -95,7 +95,7 @@ void GamePad_Velocity_R1DirNoheader(void)
 	float r = (chassis.Flagof.GamePad_Inverse == 1)? site.now.r + 90:site.now.r;
 	float y = (float)rocker_y * cos(ang2rad(r)) + rocker_x * sin(ang2rad(r));
 	float x = (float)rocker_x * cos(ang2rad(r)) - rocker_y * sin(ang2rad(r));
-	Chassis_Velocity_Out(x * Rocker_GainT, y * Rocker_GainT, BasketAngle_PIDOut());
+	Chassis_Velocity_Out(x * Rocker_GainT, y * Rocker_GainT, BasketAngleLock());
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////跑点相关///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////三种跑法：1.位置PID 2.速度PID 3.位置PID+速度PID////////////////////////////////////////////////////////////////////////////////////
@@ -105,14 +105,10 @@ void Set_Target_Point(struct Point point){
 struct cr_parameter{
 	float velocity_gain;
 	float accel_gain;
-
-	
 	float p;
 	float i;
 	float d;
-
 	float predict_step;
-	
 	float error_last;
 	float itotal;
 	float ilimit;
@@ -144,7 +140,7 @@ void Correct_Angle_Par_Init(void){
 	cr.p = 55;
 	cr.d = 3;
 	cr.i = 3;
-	cr.ilimit = 800;
+	cr.ilimit = 900;
 	cr.istart = 4;
 	cr.outlimit = 5000;
 	cr.accel_gain = 0.35;
@@ -178,8 +174,8 @@ void Position_With_Mark_PID_Run(char * anglelockdir)
 		mark.brake_distance = Limit(mark.brake_percent*mark.total_dis,800, mark.outlimit * mark.brake_percent);
 		memcpy(&last,&site.target,sizeof(last));
 	}
-	float xerror = site.target.x - ((strcmp(anglelockdir,"basket") == 0)?bl.position.now_interp.x:site.now.x);
-	float yerror = site.target.y - ((strcmp(anglelockdir,"basket") == 0)?bl.position.now_interp.y:site.now.y);
+	float xerror = site.target.x - site.now.x;
+	float yerror = site.target.y - site.now.y;
 	float rerror = site.target.r - site.now.r;
 
 	mark.gain = (hypot(xerror,yerror) > mark.brake_distance)?1:mark.brake_gain;
@@ -198,12 +194,10 @@ void Position_With_Mark_PID_Run(char * anglelockdir)
 
 	// 请记住 第一项为front left 角速度
 	float vnow = Limit(hypot(mark.outx, mark.outy), -outlimit,outlimit);
-	float angle = atan2f(yerror, xerror) - ang2rad(bl.position.now_interp.r);
+	float angle = atan2f(yerror, xerror);
 
-	Chassis_Velocity_Out(vnow * sin(angle),vnow * cos(angle),(strcmp(anglelockdir,"basket") == 0)?BasketAngle_PIDOut():Correct_Angle(site.target.r));
+	Chassis_Velocity_Out(vnow * sin(angle),vnow * cos(angle),Correct_Angle(site.target.r));
 	
-	if((strcmp(anglelockdir,"basket") == 0) && (fabs(bl.position.basket_target.x - bl.position.now_interp.x) < 15) && (fabs(bl.position.basket_target.y - bl.position.now_interp.y) < 15))
-		Self_Lock_Out();
 }
 //////////////////////////////////////////////////////////////跑点自动自锁 ： 距离越来越远 、 速度很小不足以驱动  /////////////////////////////////////////////////////////////////////
 unsigned char Velocity_Equal_Zero(void){
@@ -285,9 +279,9 @@ void Self_Lock_Auto(void){
 //			chassis.Flagof.self_lock = 0;
 //	}
 	else if(chassis.Control_Status == progress){
-		if((fabs(bl.position.basket_target.x - bl.position.now_interp.x) < 10) && (fabs(bl.position.basket_target.y - bl.position.now_interp.y) < 10))
+		if(hypot(bl.position.basket_target_vfield.x - bl.position.now_interp_vfield.x,bl.position.basket_target_vfield.y - bl.position.now_interp_vfield.y) < 25)
 			chassis.Flagof.self_lock = 1;
-		if((fabs(bl.position.basket_target.x - bl.position.now_interp.x) > 40) || (fabs(bl.position.basket_target.y - bl.position.now_interp.y) > 40))
+		if(hypot(bl.position.basket_target_vfield.x - bl.position.now_interp_vfield.x,bl.position.basket_target_vfield.y - bl.position.now_interp_vfield.y) > 50)
 			chassis.Flagof.self_lock = 0;
 	}
 	// 视觉控制时候自动自锁

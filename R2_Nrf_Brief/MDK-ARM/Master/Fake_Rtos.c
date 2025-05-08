@@ -31,7 +31,7 @@ void motor_control(void const * argument)
 				GamePad_Velocity_R1DirNoheader();
 			break;
 			case progress:
-				BasketRunPoint();
+				BasketPositionLock();
 			break;
 			case back:
 				Back();
@@ -59,7 +59,7 @@ void communication(void const * argument)
 		Get_GamePad_Data();
 	  GamePad_Data_Cla();
 	  Wireless_Send();
-    osDelay(5);
+    osDelay(20);
 	}
 	
 }

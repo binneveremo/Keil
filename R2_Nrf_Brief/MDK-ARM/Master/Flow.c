@@ -25,11 +25,7 @@ struct Point dunk_point = {
 	.y = -4000,
 	.r = 0.4
 };
-struct Point basket_point = {
-	.x = 13050,
-	.y = -4000,
-	.r = 0
-};
+
 
 void Flow(void){
 	if(flow.state == start){
