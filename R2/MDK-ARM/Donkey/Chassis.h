@@ -3,74 +3,38 @@
 
 #include "Communication.h"
 #include "Location.h"
+#include "string.h"
 #include "Global.h"
 #include "HO7213.h"
 #include "mine.h"
 #include "VESC.h"
 
-#define Small_Green 0
-
-
-#if Small_Green
-
-
-//四个舵轮的编号
-#define frontright 0
-#define frontleft 1
-#define behindleft 2
-#define behindright 3
-//转向轮 发送的ID
-#define front_right_turn_send_id 1
-#define front_left_turn_send_id 2
-#define behind_left_turn_send_id 3
-#define behind_right_turn_send_id 4
-//转向轮 回传的ID
-#define front_right_turn_receive_id 0x65
-#define front_left_turn_receive_id 0x66
-#define behind_left_turn_receive_id 0x67
-#define behind_right_turn_receive_id 0x68
-//驱动轮 VESC的ID
-#define front_right_drive_id 6
-#define front_left_drive_id 7 
-#define behind_left_drive_id 8
-#define behind_right_drive_id 9
-//想要逆时针转 就把初始偏置调大 
-//想要顺时针转 就把初始偏置调小 
-#define frontright_offset -15
-#define frontleft_offset 45
-#define behindleft_offset  160
-#define behindright_offset -63
-#else
-
+#define VESC_NUM 4
+#define TURN_NUM 4
 #define front_wheel 0		
 #define left_wheel 1
 #define right_wheel 2
 #define behind_wheel 3
 //转向轮 发送的ID
-#define front_turn_send_id 4
+#define front_turn_send_id 1
 #define left_turn_send_id 3
 #define right_turn_send_id 2
-#define behind_turn_send_id 1
+#define behind_turn_send_id 4
 //转向轮 回传的ID
-#define front_turn_receive_id 4
-#define left_turn_receive_id 3
-#define right_turn_receive_id 2
-#define behind_turn_receive_id 1
+#define front_turn_receive_id 101
+#define left_turn_receive_id 103
+#define right_turn_receive_id 102
+#define behind_turn_receive_id 104
 //驱动轮 VESC的ID
-#define front_drive_id 9
+#define front_drive_id 6
 #define left_drive_id 8
 #define right_drive_id 7
-#define behind_drive_id 6
+#define behind_drive_id 9
 //左转 偏置变大
-#define front_offset 174
-#define left_offset 174
-#define right_offset  0
-#define behind_offset  -156
-
-#endif
-
-
-
+#define front_offset -13
+#define left_offset 72
+#define right_offset  100
+#define behind_offset  -111
 
 struct Mark
 {
@@ -86,8 +50,6 @@ struct Mark
 	float itotal_y;
 	float outx;
 	float outy;
-
-	
 	///////新加的测试参数
 	float total_dis;
 	float brake_ilimit;
@@ -96,36 +58,32 @@ struct Mark
 	float brake_gain;
 	float brake_percent;
 };
-extern char spot_run_init_flag;
-extern char GamePad_Velocity_Standard_SlowFlag;
-extern char GamePad_Velocity_Standard_AccelFlag;
 struct Chassis{
 	enum{
-		Safe_Control,
-		GamePad_Control,
-		Self_Control,
-	}control_status;
-	enum{
-		standard,
-		noheader,
-	}gamepad_control;
-	enum{
-		flow,
-		test,
-		back
-	}self_control;
+			safe,
+			gamepad_standard,
+			gamepad_free_noheader,
+			gamepad_r1dir_noheader,
+			progress,
+			dribble,
+			back,
+	}Control_Status;
 	struct {
-		struct VESC drive[4];
-		struct HO7213 turn[4];
+		struct VESC  drive[VESC_NUM];
+		struct HO7213 turn[TURN_NUM];
 	}motor;
-	char self_lock_flag;
+	struct{
+		char self_lock;
+	  char GamePad_Slow;
+		char GamePad_Accel;
+		char GamePad_Inverse;
+		char lock_reason[20];
+	}Flagof;
+	
 };
 
 extern struct Chassis chassis;
 extern struct Mark mark;
-extern float Dribble_Velocity;
-extern char GamePad_NoHeader_R1Dir_Flag;
-extern char GamePad_Velocity_Standard_InverseFlag;
 //泡点参数初始化
 void Velocity_Run_Par_Init(void);
 //跑点
@@ -145,22 +103,17 @@ void Set_Target_Point(struct Point point);
 void Release_Skill(int time);
 //手柄遥控
 void GamePad_Velocity_Standard(void);
-void GamePad_Velocity_Noheader(void);
-void GamePad_Velocity_Loop(void);
+void GamePad_Velocity_FreeNoheader(void);
+void GamePad_Velocity_R1DirNoheader(void);
 //到点判断
 unsigned char Arrive_Point(struct Point point);
 unsigned char Near_Point(struct Point point);
 //自动自锁
 void Self_Lock_Auto(void);
-void Self_Brake_Out(void);
 void Self_Lock_Out(void);
-//涵道输出
-void Set_Fun_Speed(void);
-//s输入角度目标值 输出角度PID的输出值
-float Correct_Angle(float target);
 
 void Mark_PID_Par_Init(void);
-void Position_With_Mark_PID_Run(void);
+void Position_With_Mark_PID_Run(char * anglelockdir);
 
 extern int Dribble_Begin;
 void Dribble_Flow(void);

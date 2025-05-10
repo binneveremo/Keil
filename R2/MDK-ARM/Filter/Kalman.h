@@ -1,5 +1,9 @@
 #ifndef __KALMAN_H__
 #define __KALMAN_H__
+
+#include "math.h"
+
+
 struct Kalman_filter
 {
 	float C;						/*最优估计协方差矩阵C(k|k)*/ 

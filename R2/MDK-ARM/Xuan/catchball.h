@@ -20,7 +20,8 @@ typedef struct
     uint8_t InMoveToDefend;
     uint8_t InMoveToPreDunk;
     uint8_t InMoveToBackToFold;
-
+		
+		uint8_t IsError;
     // Consider adding other status flags like AtTargetPositionSettled, Folded, etc.
     // uint8_t AtTargetPositionSettled;
     // uint8_t Folded;
@@ -48,9 +49,16 @@ typedef enum
     CatchingBall = 1,    
     Defend = 2,         
     PreDunk = 3,        
-    BackToFold = 4     
+    BackToFold = 4,
+		Error = 5
 } Overall_States;
 
+// --- Timeout Definitions ---
+#define INITIALIZE_TIMEOUT_MS           10000 
+#define CATCHING_BALL_MOVE_TIMEOUT_MS   3000  
+#define DEFEND_MOVE_TIMEOUT_MS          5000  
+#define PREDUNK_MOVE_TIMEOUT_MS         3000 
+#define BACK_TO_FOLD_MOVE_TIMEOUT_MS    5000
 
 // Function Prototypes
 void Loop_Judgement(); 
@@ -61,6 +69,7 @@ void Overall_Control();
 // Helper functions
 bool IsAtTargetPositionSettled(float target_pos); 
 bool IsNearTargetPosition(float target_pos); 
+
 
 
 #endif // CATCHBALL_H

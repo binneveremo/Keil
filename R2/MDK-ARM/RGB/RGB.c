@@ -110,7 +110,7 @@ char RGB_Inner_Count(char count_index,int dt){
 }
 void RGB_Show_Velocity(void){
 	RGB_Clear_Cal();
-	float v = hypot(site.car_pos.vx,site.car_pos.vy);
+	float v = hypot(site.car.vx_gyro,site.car.vy_gyro);
 	if(v > 0.2)
 		RGB_Line_Cal(0,0xFF3F3F,2);
 	if(v > 1)
@@ -203,17 +203,13 @@ void RGB_Show_Letter(char * letter,int color,int bright){
 void RGB_Show_Warning(void){
 	static int flag;
 	static unsigned char pos[15];
-	if(hypot(site.car_pos.vx,site.car_pos.vy) > 0.3){
+	if(hypot(site.car.vx_enc,site.car.vy_enc) > 0.3){
 		if(flag == 1)
 		  RGB_Total_Cal(Red,3);
 		else if(flag == 0)
 		  RGB_Total_Cal(Red,40);
 		flag =! flag;
 	}
-	else if(chassis.control_status == GamePad_Control)
-		RGB_Total_Cal(Orange,10);
-	else if(chassis.control_status == Safe_Control)
-		RGB_Total_Cal(Green,10);
 }
 int RGB_Change_Color(int color){
 	if(color == Green)

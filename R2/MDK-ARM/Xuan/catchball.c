@@ -9,21 +9,22 @@ CatchStateFlag catch_sf = {0};
 
 // Target Positions
 float Init_Pos = 35;
-float CatchBall_Pos = 18;
+float CatchBall_Pos = 20.5;
 float Defend_Pos = -75;
-float PreDunk_Pos = 0;
+float PreDunk_Pos = 9;
 
 // Control Parameters for Position HOLDING (Mapped to Overall_States enum indices)
 // Indices:          {Initialize, CatchingBall, Defend, PreDunk, BackToFold}
-float Kp_Hold[5] =   {0.023,      0.2,          0.28,   0.25,    0.023     }; 
-float Kd_Hold[5] =   {0,          0.02,         0.02,   0.12,    0         };      
-float Trq_Hold[5]=   {0,          0,            0,      -0.8,    0         };           
-float Pos_Target[5]= {35,         18,           -75,    8,       35        };         
+float Kp_Hold[5] =   {0.023,      0.2,          0.28,   0.2,     0.023     }; 
+float Kd_Hold[5] =   {0,          0.02,         0.02,   0.06,    0         };      
+float Trq_Hold[5]=   {0,          0,            0,      -0.5,    0         };           
+float Pos_Target[5]= {35,         20.5,         -75,    9,       35        };         
 
 
 // Control Parameters for Velocity MOVEMENT (Based on original SpdUp/SpdDown)
-float Spd_Move_Up = -80; 
-float Spd_Move_Down = 30; 
+float Spd_Move_Up = -80;
+float Spd_Move_Up_Defend = -150; 
+float Spd_Move_Down = 50; 
 float Kd_Move_Up = 3;    
 float Kd_Move_Down = 0.2; 
 float Trq_Move_Up = 0;  
@@ -37,14 +38,15 @@ float State_Trq = 0;
 float State_Spd = 0;
 float State_Pos = 0; 
 
+//Thresholds
 const float POS_THRESHOLD_MOVE_DONE = 5.0; 
 const float POS_THRESHOLD_PREDUNK = 10.0;
-
 const float POS_THRESHOLD_HOLD_SETTLED = 5.0; 
 const float SPD_THRESHOLD_HOLD_SETTLED = 10.0;
 
 static uint32_t catching_entry_time = 0;
 const uint32_t CATCH_TIMEOUT_MS = 2000; 
+static uint32_t state_entry_time = 0;
 
 
 bool IsAtTargetPositionSettled(float target_pos)
@@ -62,28 +64,6 @@ bool IsAtTargetPositionSettled(float target_pos)
 		{
 			return fabsf(pos_err) < POS_THRESHOLD_PREDUNK && fabsf(current_spd) < SPD_THRESHOLD_HOLD_SETTLED;
 		}
-}
-
-bool IsNearTargetPosition(float target_pos)
-{
-    if (HIGHTORQUE_NUM == 0) return false;
-
-    float pos_err = HighTorque[0].fdbk.pos - target_pos;
-    return fabsf(pos_err) < POS_THRESHOLD_MOVE_DONE;
-}
-
-int Read_PG()
-{
-	uint8_t PG_Counter = 0;
-    for(int i = 0; i < 10; i++)
-	{
-		if(HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_11) == GPIO_PIN_SET) PG_Counter++;
-		else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET) PG_Counter++;
-		else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_SET) PG_Counter++;
-	}
-
-	catch_sf.stateflag.PG_State = (PG_Counter >= 7) ? 1 : 0;
-	return catch_sf.stateflag.PG_State;
 }
 
 
@@ -116,38 +96,8 @@ void Overall_Control()
     {
         case Initialize: { 
             if (catch_sf.stateflag.IfNeedCheck) {
-                if (init_step == 0) { 
-                    State_Kp = 0; State_Kd = Kd_Move_Up; State_Spd = Spd_Move_Up; State_Pos = 0; State_Trq = Trq_Move_Up;
-                    init_step_start_time = HAL_GetTick(); 
-                    init_step = 1;
-                } else if (init_step == 1) { 
-                     State_Kp = 0; State_Kd = Kd_Move_Up; State_Spd = Spd_Move_Up; State_Pos = 0; State_Trq = Trq_Move_Up;
-                    if (fabsf(HighTorque[0].fdbk.spd) < SPD_THRESHOLD_HOLD_SETTLED && HighTorque[0].fdbk.pos > INIT_SWEEP_UP_POS_CHECK) { // Check speed is low and moved up significantly
-                        init_step = 2; 
-                        init_step_start_time = HAL_GetTick(); 
-                    } else if (HAL_GetTick() - init_step_start_time > INIT_SWEEP_UP_TIMEOUT) {
-                        catch_sf.stateflag.IfNeedCheck = 0;
-                        init_step = 0; 
-                    }
-                } else if (init_step == 2) { 
-                     State_Kp = 0; State_Kd = Kd_Move_Down; State_Spd = Spd_Move_Down; State_Pos = 0; State_Trq = Trq_Move_Down;
-                    if (HighTorque[0].fdbk.pos < (Init_Pos - 8)) { 
-                        init_step = 3; 
-                        // init_step_start_time = HAL_GetTick(); // Not strictly needed for the last step
-                    } else if (HAL_GetTick() - init_step_start_time > INIT_SWEEP_DOWN_TIMEOUT) {
-                        catch_sf.stateflag.IfNeedCheck = 0;
-                        init_step = 0; 
-                    }
-                } else if (init_step == 3) {
-                     State_Pos = Pos_Target[BackToFold]; 
-                     State_Kp = Kp_Hold[BackToFold]; 
-                     State_Kd = Kd_Hold[BackToFold]; 
-                     State_Trq = Trq_Hold[BackToFold];
-                     State_Spd = 0; 
-
-                    catch_sf.stateflag.IfNeedCheck = 0; 
-                    init_step = 0; 
-                }
+                
+               
             } else {
                 State_Pos = Pos_Target[BackToFold]; 
                 State_Kp = Kp_Hold[BackToFold];
@@ -201,7 +151,7 @@ void Overall_Control()
                     State_Kd = Kd_Move_Down;
                     State_Trq = Trq_Move_Down;
                 } else if (HighTorque[0].fdbk.pos > target_pos + POS_THRESHOLD_MOVE_DONE) {
-                    State_Spd = Spd_Move_Up;
+                    State_Spd = Spd_Move_Up_Defend;
                     State_Kd = Kd_Move_Up;
                     State_Trq = Trq_Move_Up;
                 } else {
@@ -281,6 +231,13 @@ void Overall_Control()
                 IsAtTargetPositionSettled(target_pos);
             }
             break; }
+				case Error:
+					State_Pos = 0;
+          State_Kp = 0;
+          State_Kd = 0;
+          State_Trq = 0;
+          State_Spd = 0;
+					break;
     }
 }
 
@@ -291,40 +248,81 @@ void Loop_Judgement()
     Overall_States next_state = current_state; // Assume stay in current state by default
 
     // Read external commands/sensors
-    interact.get_ball = Read_PG();
+    // interact.get_ball = Read_PG();
     bool gamepad_pressed = interact.GamePad;
     bool catch_timer_elapsed = (current_state == CatchingBall) && (HAL_GetTick() - catching_entry_time > CATCH_TIMEOUT_MS); // Check timer only when in CatchingBall
 
-    // --- State Transition Logic ---
-    switch(interact.defend_status)
+//    uint32_t elapsed_time = HAL_GetTick() - state_entry_time;
+
+//    switch(current_state)
+//    {
+//        case Initialize:
+//            if(catch_sf.stateflag.IfNeedCheck && (elapsed_time > INITIALIZE_TIMEOUT_MS)){
+//                next_state = Error;
+//            }
+//            break;
+//        
+//        case CatchingBall:
+//            if(catch_sf.stateflag.InMoveToCatchingBall && (elapsed_time > CATCHING_BALL_MOVE_TIMEOUT_MS)){
+//                next_state = Error;
+//            }
+//            break;
+
+//        case Defend:
+//            if(catch_sf.stateflag.InMoveToDefend && (elapsed_time > DEFEND_MOVE_TIMEOUT_MS)){
+//                next_state = Error;
+//            }
+//            break;
+//        
+//        case PreDunk:
+//            if(catch_sf.stateflag.InMoveToPreDunk && (elapsed_time > PREDUNK_MOVE_TIMEOUT_MS)){
+//                next_state = Error;
+//            }
+//            break;
+//        
+//        case BackToFold:
+//            if(catch_sf.stateflag.InMoveToBackToFold && (elapsed_time > BACK_TO_FOLD_MOVE_TIMEOUT_MS)){
+//                next_state = Error;
+//            }
+//            break;
+//        
+//        case Error:
+//            break;
+
+//    }
+
+    if(next_state != Error)
     {
-        case initial:
-            next_state = Initialize;
-            break;
+        // --- State Transition Logic ---
+        switch(interact.defend_status)
+        {
+            case initial:
+                next_state = Initialize;
+                break;
 
-        case fold:
-            next_state = BackToFold;
-            break;
+            case fold:
+                next_state = BackToFold;
+                break;
 
-        case catch_ball:
-            next_state = CatchingBall;
-            break;
+            case catch_ball:
+                next_state = CatchingBall;
+                break;
 
-        case defend:
-            next_state = Defend;
-            break;
+            case defend:
+                next_state = Defend;
+                break;
 
-        case predunk:
-             if (current_state == CatchingBall && (catch_timer_elapsed || gamepad_pressed))
-             {
-                 next_state = PreDunk;
-             }
-             break;
-
-        default:
-            break;
+            case predunk:
+    //             if (current_state == CatchingBall && (catch_timer_elapsed || gamepad_pressed))
+    //             {
+    //                 next_state = PreDunk;
+    //             }
+                  next_state = PreDunk;
+                break;
+            default:
+                break;
+        }
     }
-
     // --- Apply the determined next state and Handle State Entry ---
     if (next_state != current_state) {
 
@@ -355,6 +353,8 @@ void Loop_Judgement()
              case BackToFold:
                 catch_sf.stateflag.InMoveToBackToFold = 1;
                 break;
+						 case Error:
+							 break;
          }
     }
 
@@ -362,28 +362,5 @@ void Loop_Judgement()
     interact.GamePad = 0;
 }
 
-// --- RTOS Tasks ---
-
-//void HTMotorControl(void const * argument)
-//{
-//    for(;;)
-//    {
-//        Single_Control();
-//        HighTorque_SendPosParam_f(&hfdcan1, 6);
-
-//        osDelay(4);
-//    }
-//}
-
-//void ParamsChange(void const * argument)
-//{
-//    for(;;)
-//    {
-//        Loop_Judgement();
-//        Overall_Control();
-
-//        osDelay(10);
-//    }
-//}
 
 

@@ -1,6 +1,8 @@
-new_chassis/catchball.o: Xuan\catchball.c Xuan\catchball.h \
-  Xuan\Interact.h Xuan\HighTorque.h ..\Core\Inc\fdcan.h \
-  ..\Core\Inc\main.h ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
+new_chassis/basket.o: Basket\Basket.c Basket\Basket.h \
+  Communication\Television.h Position\Location.h Global\Global.h \
+  Donkey\Chassis.h Communication\Communication.h Can\Can_Bsp.h \
+  ..\Core\Inc\fdcan.h ..\Core\Inc\main.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
   ..\Core\Inc\stm32h7xx_hal_conf.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rcc.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_def.h \
@@ -31,7 +33,11 @@ new_chassis/catchball.o: Xuan\catchball.c Xuan\catchball.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_tim_ex.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
-  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h \
+  Xuan\Interact.h Xuan\HighTorque.h Xuan\catchball.h Donkey\HO7213.h \
+  ..\Core\Inc\usart.h GamePad\mine.h GamePad\mngCommu.h \
+  GamePad\recDecode.h GamePad\Nrf.h ..\Core\Inc\spi.h Donkey\VESC.h \
+  Filter\Kalman.h Guard\Guard.h Master\Flow.h Debug\Send.h \
+  Master\Fake_Rtos.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h \
   ..\Core\Inc\FreeRTOSConfig.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h \
@@ -41,6 +47,7 @@ new_chassis/catchball.o: Xuan\catchball.c Xuan\catchball.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \

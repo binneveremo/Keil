@@ -1,4 +1,5 @@
 #include "Location.h"
+#include "Encoder.h"
 #include "Television.h"
 #include <string.h>
 #include "Global.h"
@@ -15,40 +16,18 @@ struct EKF ekf_y = {
 	.r = 1.8,
 };
 void Location_Type_Choose(void){
-//	site.now.x = ladar.x;
-//	site.now.y = ladar.y;
-	site.now.x = ((dt35.xcredible_flag == 1) && (Near_Point(site.target) == 1))?dt35.x:site.enc_pos.row_x + 400;
-	site.now.y = ((dt35.ycredible_flag == 1) && (Near_Point(site.target) == 1))?dt35.y:site.enc_pos.row_y - 375;
-	site.ladar_pos.row_x = ladar.x;
-	site.ladar_pos.row_y = ladar.y;
-  site.ladar_pos.with_odo_x = ladar.fuse_x;
-	site.ladar_pos.with_odo_y = ladar.fuse_y;
-	site.now.r = site.gyro_pos.r;
-	//site.now.r = ladar.r;
+	site.now.x = site.field.x_enc;
+	site.now.y = site.field.y_enc;
+	site.now.r = site.gyro.r;
 }
-//////////////////////////////////////////////像雷达一样在dt35的基础上做积分
-void DT35_Fuse_With_Odometer(float dt){
-	if((site.dt35_pos.x_credible_flag ==  2)){
-		site.fuse_pos.x = site.dt35_pos.x; 
-	}
-	if((site.dt35_pos.y_credible_flag ==  2)){
-		site.fuse_pos.y = site.dt35_pos.y;
-	}
-	site.fuse_pos.x+=site.gyro_pos.with_odo_vx*dt;
-	site.fuse_pos.y+=site.gyro_pos.with_odo_vy*dt;
-}
-
-
 ///////////////////////////////////////////////////////码盘与陀螺仪速度融合计算///////////////////////////////////////////////////////////////
 //码盘的y轴是陀螺仪的-x轴
 void Enc_VXVY_Fuse_With_Gyro_AXAY(float dt){
-	site.car_pos.vx = EKF_Filter(&ekf_x,site.car_pos.row_vx,site.car_pos.ax*dt / 1000);
-	site.car_pos.vy = EKF_Filter(&ekf_y,site.car_pos.row_vy,site.car_pos.ay*dt / 1000);
-	site.gyro_pos.with_odo_vx  = site.car_pos.vx * cos(ang2rad(site.now.r)) - site.car_pos.vy * sin(ang2rad(site.now.r));
-	site.gyro_pos.with_odo_vy  = site.car_pos.vx * sin(ang2rad(site.now.r)) + site.car_pos.vy * cos(ang2rad(site.now.r));
+	site.car.vx_gyro = EKF_Filter(&ekf_x,site.car.vx_enc,site.car.ax_gyro*dt / 1000);
+	site.car.vy_gyro = EKF_Filter(&ekf_y,site.car.vy_enc,site.car.ay_gyro*dt / 1000);
 
-	//site.gyro_pos.with_odo_vx = EKF_Filter(&ekf_x,site.enc_pos.row_vx,site.gyro_pos.accx*dt / 1000);
-  //site.gyro_pos.with_odo_vy = EKF_Filter(&ekf_y,site.enc_pos.row_vy,site.gyro_pos.accy*dt / 1000);
+	site.field.vx_gyro  = site.car.vx_gyro * cos(ang2rad(site.now.r)) - site.car.vy_gyro * sin(ang2rad(site.now.r));
+	site.field.vy_gyro  = site.car.vx_gyro * sin(ang2rad(site.now.r)) + site.car.vy_gyro * cos(ang2rad(site.now.r));
 }
 //////////////////////////////////////////////////////码盘与陀螺仪与雷达速度融合计算/////////////////////////////////////////////////////////////
 struct EKF odo_ladar_ekf_x = {
@@ -78,39 +57,39 @@ struct EKF odo_ladar_kalman_y = {
 //////////////////////////////////////////////////////////////////////////////////雷达与马盘的数据融合/////////////////////////////////////////////////////////////////////
 void Ladar_With_Odometer_Kalman(float dt){
 	//给结构体赋值
-	if(ladar.get_flag == 1){
-		ladar.get_flag = 0;
-		ladar.dx = 0;
-		ladar.dy = 0;
-	}
-	else if(ladar.get_flag == 0){
-		ladar.dx += site.enc_pos.row_vx * dt ;
-		ladar.dy += site.enc_pos.row_vy * dt ;
-	}
-	ladar.fuse_x = ladar.x + ladar.dx;
-	ladar.fuse_y = ladar.y + ladar.dy;
-	site.ladar_pos.row_x = ladar.x;
-	site.ladar_pos.row_y = ladar.y;
-	site.ladar_pos.with_odo_x = EKF_Filter(&odo_ladar_kalman_x,ladar.fuse_x,site.gyro_pos.with_odo_vx * dt);;
-	site.ladar_pos.with_odo_y = EKF_Filter(&odo_ladar_kalman_y,ladar.fuse_y,site.gyro_pos.with_odo_vy * dt);
-}
-void Ladar_With_Odometer_Relocation(float dt){
-	if(ladar.get_flag == 1){
-		ladar.get_flag = 0;
-		ladar.dx = 0;
-		ladar.dy = 0;
-	}
-	else if(ladar.get_flag == 0){
-		ladar.dx += site.enc_pos.row_vx * dt * 1.00;
-		ladar.dy += site.enc_pos.row_vy * dt * 1.00;
-	}
-	ladar.fuse_x = ladar.x + ladar.dx;
-	ladar.fuse_y = ladar.y + ladar.dy;
-	
-	site.ladar_pos.row_x = ladar.x;
-	site.ladar_pos.row_y = ladar.y;
-	site.ladar_pos.with_odo_x = ladar.fuse_x;
-	site.ladar_pos.with_odo_y = ladar.fuse_y;
+//	if(ladar.get_flag == 1){
+//		ladar.get_flag = 0;
+//		ladar.dx = 0;
+//		ladar.dy = 0;
+//	}
+//	else if(ladar.get_flag == 0){
+//		ladar.dx += site.enc_pos.row_vx * dt ;
+//		ladar.dy += site.enc_pos.row_vy * dt ;
+//	}
+//	ladar.fuse_x = ladar.x + ladar.dx;
+//	ladar.fuse_y = ladar.y + ladar.dy;
+//	site.ladar_pos.row_x = ladar.x;
+//	site.ladar_pos.row_y = ladar.y;
+//	site.ladar_pos.with_odo_x = EKF_Filter(&odo_ladar_kalman_x,ladar.fuse_x,site.gyro_pos.with_odo_vx * dt);;
+//	site.ladar_pos.with_odo_y = EKF_Filter(&odo_ladar_kalman_y,ladar.fuse_y,site.gyro_pos.with_odo_vy * dt);
+//}
+//void Ladar_With_Odometer_Relocation(float dt){
+//	if(ladar.get_flag == 1){
+//		ladar.get_flag = 0;
+//		ladar.dx = 0;
+//		ladar.dy = 0;
+//	}
+//	else if(ladar.get_flag == 0){
+//		ladar.dx += site.enc_pos.row_vx * dt * 1.00;
+//		ladar.dy += site.enc_pos.row_vy * dt * 1.00;
+//	}
+//	ladar.fuse_x = ladar.x + ladar.dx;
+//	ladar.fuse_y = ladar.y + ladar.dy;
+//	
+//	site.ladar_pos.row_x = ladar.x;
+//	site.ladar_pos.row_y = ladar.y;
+//	site.ladar_pos.with_odo_x = ladar.fuse_x;
+//	site.ladar_pos.with_odo_y = ladar.fuse_y;
 }	
 
 

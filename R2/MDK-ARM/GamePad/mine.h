@@ -1,7 +1,7 @@
 #ifndef __MINE_H
 #define __MINE_H
 
-#include "mngSerial.h"
+#include "mngCommu.h"
 #include "Chassis.h"
 
 extern float Game_Pad_Rocker_Data[4];

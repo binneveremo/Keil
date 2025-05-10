@@ -6,10 +6,11 @@
 
 enum Interact_Flag{
 	initial = 0,
-	fold,
-  catch_ball,
-  defend,
-	predunk
+	fold = 1,
+  catch_ball = 2,
+  defend = 3,
+	predunk = 4,
+	CMD_ERROR_CLEAR = 5
 };
 struct Interact{
 	enum Interact_Flag defend_status;

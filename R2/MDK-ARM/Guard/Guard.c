@@ -28,11 +28,11 @@ void Guard_Trace_Run(void)
 	static float left_out,front_out;
 	left_out += Limit(left - left_out,-55,55);
 	front_out += Limit(front - front_out,-55,55);
-	Chassis_Velocity_Out(left_out,front_out,Correct_Angle(site.target.r));
+	//Chassis_Velocity_Out(left_out,front_out,Correct_Angle(site.target.r));
 	//方向反向的话先刹车再反向加速
-	float velocity_angle = atan2f(site.gyro_pos.with_odo_vy, site.gyro_pos.with_odo_vx);
-	if((If_Rad_Oppsite(point_angle,velocity_angle,gt.break_angle) == 1) && (hypot(site.gyro_pos.with_odo_vy, site.gyro_pos.with_odo_vx) > 0.5))
-		Self_Lock_Out();
+//	float velocity_angle = atan2f(site., site.gyro_pos.with_odo_vx);
+//	if((If_Rad_Oppsite(point_angle,velocity_angle,gt.break_angle) == 1) && (hypot(site.gyro_pos.with_odo_vy, site.gyro_pos.with_odo_vx) > 0.5))
+//		Self_Lock_Out();
 	if (hypot(xerror,yerror) <= gt.brake_distance)
 		Self_Lock_Out();
 }

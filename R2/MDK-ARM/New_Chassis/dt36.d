@@ -34,6 +34,8 @@ new_chassis/dt36.o: Position\DT36.c Position\DT36.h Position\Location.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_i2c_ex.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pwr.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pwr_ex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_spi.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_spi_ex.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_tim.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_tim_ex.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
@@ -45,6 +47,6 @@ new_chassis/dt36.o: Position\DT36.c Position\DT36.h Position\Location.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
   Debug\Send.h Communication\Television.h Donkey\Chassis.h \
   Communication\Communication.h Donkey\HO7213.h ..\Core\Inc\fdcan.h \
-  Can\Can_Bsp.h ..\Core\Inc\usart.h GamePad\mine.h GamePad\mngSerial.h \
-  GamePad\mySerial.h GamePad\recDecode.h Donkey\VESC.h Filter\Kalman.h \
-  Guard\Guard.h
+  Can\Can_Bsp.h ..\Core\Inc\usart.h GamePad\mine.h GamePad\mngCommu.h \
+  GamePad\recDecode.h GamePad\Nrf.h ..\Core\Inc\spi.h Donkey\VESC.h \
+  Filter\Kalman.h Guard\Guard.h

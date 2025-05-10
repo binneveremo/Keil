@@ -4,9 +4,10 @@
 #include "string.h"
 #include "math.h"
 
-#define Safe -1
-#define PI 3.1415926f
 
+
+
+#define PI 3.1415926f
 struct Point {
 	float x;
 	float y;
@@ -25,4 +26,5 @@ float Point_Distance(struct Point a,struct Point b);
 char Point_Difference(struct Point a,struct Point b);
 char If_Rad_Oppsite(float rad1, float rad2, float ang);
 float char2float(unsigned char * data);
+float NormalizeAng_Single(float ang);
 #endif

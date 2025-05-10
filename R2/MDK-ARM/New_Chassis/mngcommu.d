@@ -1,5 +1,4 @@
-new_chassis/catchball.o: Xuan\catchball.c Xuan\catchball.h \
-  Xuan\Interact.h Xuan\HighTorque.h ..\Core\Inc\fdcan.h \
+new_chassis/mngcommu.o: GamePad\mngCommu.c GamePad\mngCommu.h \
   ..\Core\Inc\main.h ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
   ..\Core\Inc\stm32h7xx_hal_conf.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rcc.h \
@@ -31,7 +30,7 @@ new_chassis/catchball.o: Xuan\catchball.c Xuan\catchball.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_tim_ex.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
-  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h \
+  GamePad\recDecode.h GamePad\Nrf.h ..\Core\Inc\spi.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h \
   ..\Core\Inc\FreeRTOSConfig.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h \
@@ -39,9 +38,14 @@ new_chassis/catchball.o: Xuan\catchball.c Xuan\catchball.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\portmacro.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
-  ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
+  GamePad\mine.h Donkey\Chassis.h Communication\Communication.h \
+  Position\Location.h Global\Global.h Can\Can_Bsp.h ..\Core\Inc\fdcan.h \
+  Xuan\Interact.h Xuan\HighTorque.h Xuan\catchball.h Donkey\HO7213.h \
+  ..\Core\Inc\usart.h Donkey\VESC.h GamePad\crc8.h

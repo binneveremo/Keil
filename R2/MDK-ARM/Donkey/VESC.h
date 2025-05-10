@@ -5,6 +5,9 @@
 #include "main.h"
 #include "stdbool.h"
 #include "string.h"
+#define VESC_START_VELOCITY 900
+
+
 struct VESC {
 	float front;
 	float left;

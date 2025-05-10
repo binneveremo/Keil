@@ -2,7 +2,7 @@
 #include "Send.h"
 #include "Global.h"
 #define send_uart huart1
-#define wireless_uart huart10
+#define wireless_uart huart3
 
 #define RECEIVE_R1 1
 
@@ -13,22 +13,17 @@
 
 #endif
 
-
 int send_flag;
 char send_data[40];
 unsigned char wireless_data[wireless_data_num];
 uint8_uint32_float_union send_union;
 
-//新的通信协议
-//一共只需要五位 帧头加浮点数
 ///////////////////////////无线烧录器所使用的程序////////////////////////////////////////////
 uint8_uint32_float_union send_union;
 void Send_Put_Data(char index,float data){
 	send_union.float_data[index] = data;
 }
 void Send_Float_Data(char num){
-	if(send_flag == 0)
-		return;
 	//计算前几位的值
 	float total; 
 	for(char i = 0; i < num;i++)
@@ -64,21 +59,13 @@ void Wireless_Receive_Decode(UART_HandleTypeDef *huart){
 void Wireless_Send(void){
 	unsigned char send[10];
 	send[0] = 0xAA;
-	send_union.float_data[0] = site.now.x + 200;
+//	send_union.float_data[0] = site.now.x + 250;
+	send_union.float_data[0] = site.now.x;
 	send_union.float_data[1] = site.now.y;
 	memcpy(&send[1],send_union.uint8_data,8);
-	send[9] = chassis.self_lock_flag;
+	send[9] = chassis.Flagof.self_lock;
 	HAL_UART_Transmit(&wireless_uart, (unsigned char*)send, sizeof(send), HAL_MAX_DELAY);
  }
-//板子测试程序
-void Send_Test(void){
-	unsigned char send1[4] = {0x01,0x02,0x03,0x04};
-	HAL_UART_Transmit(&huart2, (unsigned char*)send1, sizeof(send1), HAL_MAX_DELAY);
-	unsigned char send2[4] = {0x04,0x03,0x02,0x01};
-	HAL_UART_Transmit(&huart6, (unsigned char*)send2, sizeof(send2), HAL_MAX_DELAY);
-	osDelay(4);
-}
-
 
 
 
